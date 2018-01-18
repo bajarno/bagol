@@ -2,10 +2,10 @@ typedef struct {
     int width;
     int height;
     char ** data;
-} grid;
+} Grid;
 
-grid grid_init(int width, int height) {
-    grid grid;
+Grid grid_init(int width, int height) {
+    Grid grid;
 
     grid.width = width;
     grid.height = height;
@@ -24,14 +24,14 @@ grid grid_init(int width, int height) {
     return grid;
 }
 
-void free_grid(grid grid) {
+void free_grid(Grid grid) {
     for (int i = 0; i < grid.width; i++) {
         free(grid.data[i]);
     }
     free(grid.data);
 }
 
-grid grid_step(grid grid) {
+Grid grid_step(Grid grid) {
     char ** new_data = malloc(grid.width * sizeof(*new_data));
     for(int i = 0; i < grid.width; i++) {
         new_data[i] = malloc(grid.height * sizeof(*(new_data[i])));

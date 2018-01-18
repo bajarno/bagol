@@ -46,7 +46,7 @@ SDL_Texture* sdl_create_texture(int width, int height, SDL_Renderer* renderer, S
     return texture;
 }
 
-void update_texture(SDL_Renderer* renderer, SDL_Texture* texture, grid grid) {
+void update_texture(SDL_Renderer* renderer, SDL_Texture* texture, Grid grid) {
     int width;
     int height;
     SDL_QueryTexture(texture, NULL, NULL, &width, &height);
