@@ -24,7 +24,7 @@ Grid grid_init(int width, int height) {
     return grid;
 }
 
-void free_grid(Grid grid) {
+void free_grid_memory(Grid grid) {
     for (int i = 0; i < grid.width; i++) {
         free(grid.data[i]);
     }
@@ -76,9 +76,17 @@ Grid grid_step(Grid grid) {
         }
     }
     
-    free_grid(grid);
+    free_grid_memory(grid);
 
     grid.data = new_data;
 
     return grid;
+}
+
+void grid_clear(Grid grid) {
+    for (int x = 0; x < grid.width; x++) {
+        for (int y = 0; y < grid.height; y++) {
+            grid.data[x][y] = 0;
+        }
+    }
 }
