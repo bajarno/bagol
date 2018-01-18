@@ -24,6 +24,13 @@ grid grid_init(int width, int height) {
     return grid;
 }
 
+void free_grid(grid grid) {
+    for (int i = 0; i < grid.width; i++) {
+        free(grid.data[i]);
+    }
+    free(grid.data);
+}
+
 grid grid_step(grid grid) {
     char ** new_data = malloc(grid.width * sizeof(*new_data));
     for(int i = 0; i < grid.width; i++) {
@@ -69,10 +76,7 @@ grid grid_step(grid grid) {
         }
     }
     
-    for (int i = 0; i < grid.width; i++) {
-        free(grid.data[i]);
-    }
-    free(grid.data);
+    free_grid(grid);
 
     grid.data = new_data;
 

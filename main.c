@@ -33,11 +33,24 @@ int main(int argc, char** argv)
     grid.data[631][17] = 1;
     grid.data[632][17] = 1;
 
+    // Add R-pentomino
+    grid.data[301][300] = 1;
+    grid.data[302][300] = 1;
+    grid.data[300][301] = 1;
+    grid.data[301][301] = 1;
+    grid.data[301][302] = 1;
 
-    for (int i = 0; i < 2000; i++) {
+
+    while (1) {
         grid = grid_step(grid);
 
         update_texture(renderer, texture, grid);
+        
+        SDL_Event event;
+        SDL_PollEvent(&event);
+        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+            break;
+        }
     }
 
     sdl_quit(renderer, texture, window);
