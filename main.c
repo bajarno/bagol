@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include <SDL2/SDL.h>
 
 typedef struct {
     int width;
@@ -89,10 +92,60 @@ grid init_grid(int width, int height) {
     return grid;
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    int width = 20;
-    int height = 20;
+    // Initialize SDL
+    if (SDL_Init(SDL_INIT_VIDEO) != 0){
+        fprintf(stderr, "could not initialize SDL: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    // Create window
+    SDL_Window *window = SDL_CreateWindow(
+        "hello_sdl2",
+        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+        640, 480,
+        SDL_WINDOW_SHOWN
+        );
+    if (window == NULL){
+        fprintf(stderr, "could not create window: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    // Create renderer
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+    if (renderer == NULL){
+        SDL_DestroyWindow(window);
+        fprintf(stderr, "could not create renderer: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    // Load bitmap
+    SDL_Surface *bitmap = SDL_LoadBMP("hello.bmp");
+    if (bitmap == NULL){
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        fprintf(stderr, "could not load bitmap: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    // Create texture
+    SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_STATIC, 640, 480);    
+    SDL_FreeSurface(bitmap);
+    if (texture == NULL){
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        fprintf(stderr, "could not create texture: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    
+    int width = 640;
+    int height = 480;
 
     grid grid = init_grid(width, height);
 
@@ -104,18 +157,42 @@ int main()
     grid.data[3][3] = 1;
 
     // Add blinker
-    grid.data[1][17] = 1;
-    grid.data[2][17] = 1;
-    grid.data[3][17] = 1;
-
-    print_grid(grid);
+    grid.data[630][17] = 1;
+    grid.data[631][17] = 1;
+    grid.data[632][17] = 1;
 
     for (int i = 0; i < 100; i++) {
-        // getchar();
         grid = step_grid(grid);
-        printf("After step %d:\n",i);
-        print_grid(grid);
+
+        char pixels[640*480];
+        memset(pixels, 255, 640 * 480 * sizeof(char));
+        for (int i = 0; i < 640*480; i++) {
+            pixels[i] = grid.data[i%640][i/640]*255;
+        }
+
+
+        SDL_UpdateTexture(texture, NULL, pixels, 640 * sizeof(char));
+    
+        //First clear the renderer
+        SDL_RenderClear(renderer);
+        //Draw the texture
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+        //Update the screen
+        SDL_RenderPresent(renderer);
+        //Take a quick break after all that hard work
+        SDL_Delay(10);
     }
 
+    // delete[] pixels;
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
     return 0;
+
+
+
+
+    
 }
