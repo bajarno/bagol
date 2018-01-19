@@ -11,10 +11,10 @@
 int main(int argc, char** argv)
 {
     // Settings
-    int screen_width = 2560;
-    int screen_height = 1440;
-    int grid_width = screen_width/2;
-    int grid_height = screen_height/2;
+    int screen_width = 1280;
+    int screen_height = 720;
+    int grid_width = screen_width;
+    int grid_height = screen_height;
 
     // Parse arguments
     char fullscreen = 0;
@@ -47,8 +47,12 @@ int main(int argc, char** argv)
                 grid_clear(grid);
             }
         } else if (event.type == SDL_MOUSEBUTTONDOWN) {
-            int x = event.motion.x * grid_width / screen_width;
-            int y = event.motion.y * grid_height / screen_height;
+            int width;
+            int height;
+            SDL_GetWindowSize(window, &width, &height);
+
+            int x = event.button.x * grid_width / width;
+            int y = event.button.y * grid_height / height;
             add_pattern(RPENTOMINO, grid, x, y);
         }
 

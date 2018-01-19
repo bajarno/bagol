@@ -6,7 +6,7 @@ void sdl_init() {
     }
 }
 
-SDL_Window* sdl_create_window(int width, int height) {
+SDL_Window* sdl_create_window(int width, int height, int fullscreen) {
     SDL_Window *window = SDL_CreateWindow(
         "hello_sdl2",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -21,6 +21,7 @@ SDL_Window* sdl_create_window(int width, int height) {
 
     if (fullscreen) {
         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+        SDL_SetWindowSize(window, 2560, 1440);
     }
 
     return window;
