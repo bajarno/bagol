@@ -10,17 +10,19 @@
 
 int main(int argc, char** argv)
 {
-    int width = 640;
-    int height = 480;
+    int screen_width = 1280;
+    int screen_height = 720;
+    int grid_width = screen_width/2;
+    int grid_height = screen_height/2;
 
     // Setup graphics
     sdl_init();
-    SDL_Window* window = sdl_create_window(width*2, height*2);
+    SDL_Window* window = sdl_create_window(screen_width, screen_height);
     SDL_Renderer* renderer = sdl_create_renderer(window);
-    SDL_Texture* texture = sdl_create_texture(width, height, renderer, window);
+    SDL_Texture* texture = sdl_create_texture(grid_width, grid_height, renderer, window);
     
     // Setup grid
-    Grid grid = grid_init(width, height);
+    Grid grid = grid_init(grid_width, grid_height);
 
     add_pattern(RPENTOMINO, grid, 300, 300);
 
@@ -34,9 +36,8 @@ int main(int argc, char** argv)
                 grid_clear(grid);
             }
         } else if (event.type == SDL_MOUSEBUTTONDOWN) {
-            printf("MouseUP\n");
-            int x = event.motion.x/2;
-            int y = event.motion.y/2;
+            int x = event.motion.x * grid_width / screen_width;
+            int y = event.motion.y * grid_height / screen_height;
             add_pattern(RPENTOMINO, grid, x, y);
         }
 

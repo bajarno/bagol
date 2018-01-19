@@ -53,8 +53,8 @@ void update_texture(SDL_Renderer* renderer, SDL_Texture* texture, Grid grid) {
 
     char pixels[width * height];
     memset(pixels, 255, width * height * sizeof(char));
-    for (int i = 0; i < 640*480; i++) {
-        pixels[i] = grid.data[i%640][i/640]*255;
+    for (int i = 0; i < grid.width * grid.height; i++) {
+        pixels[i] = grid.data[i % grid.width][i / grid.width] * 255;
     }
 
     SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(char));
