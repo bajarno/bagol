@@ -13,9 +13,14 @@ SDL_Window* sdl_create_window(int width, int height) {
         width, height,
         SDL_WINDOW_SHOWN
         );
+    
     if (window == NULL){
         fprintf(stderr, "could not create window: %s\n", SDL_GetError());
         SDL_Quit();
+    }
+
+    if (fullscreen) {
+        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
     }
 
     return window;
