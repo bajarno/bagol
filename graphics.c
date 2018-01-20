@@ -1,3 +1,4 @@
+#import "graphics.h"
 #import "grid.c"
 
 void sdl_init() {
@@ -52,16 +53,20 @@ SDL_Texture* sdl_create_texture(int width, int height, SDL_Renderer* renderer, S
     return texture;
 }
 
-void update_texture(SDL_Renderer* renderer, SDL_Texture* texture, Grid grid) {
+void update_texture(SDL_Renderer* renderer, SDL_Texture* texture, Grid* grid) {
     int width;
     int height;
     SDL_QueryTexture(texture, NULL, NULL, &width, &height);
 
     char pixels[width * height];
     memset(pixels, 255, width * height * sizeof(char));
-    for (int i = 0; i < grid.width * grid.height; i++) {
-        pixels[i] = grid.data[i % grid.width][i / grid.width] * 255;
+
+    // Lock grid data and calculate pixel values
+    SDL_AtomicLock(&grid->read_lock);
+    for (int i = 0; i < grid->width * grid->height; i++) {
+        pixels[i] = grid->data[i % grid->width][i / grid->width] * 255;
     }
+    SDL_AtomicUnlock(&grid->read_lock);
 
     SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(char));
     SDL_RenderClear(renderer);
@@ -69,9 +74,9 @@ void update_texture(SDL_Renderer* renderer, SDL_Texture* texture, Grid grid) {
     SDL_RenderPresent(renderer);
 }
 
-void sdl_quit(SDL_Renderer* renderer, SDL_Texture* texture, SDL_Window* window) {
-    SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+void sdl_quit(AppData data) {
+    SDL_DestroyTexture(data.texture);
+    SDL_DestroyRenderer(data.renderer);
+    SDL_DestroyWindow(data.window);
     SDL_Quit();
 }
