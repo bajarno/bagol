@@ -56,10 +56,12 @@ SDL_Texture* sdl_create_texture(int width, int height, SDL_Renderer* renderer, S
 void update_texture(SDL_Renderer* renderer, SDL_Texture* texture, Grid* grid) {
     int width;
     int height;
+
     SDL_QueryTexture(texture, NULL, NULL, &width, &height);
 
-    char pixels[width * height];
-    memset(pixels, 255, width * height * sizeof(char));
+    int size = width * height;
+    char* pixels = malloc(size * sizeof(*pixels));
+    memset(pixels, 255, size * sizeof(*pixels));
 
     // Lock grid data and calculate pixel values
     SDL_AtomicLock(&grid->read_lock);
@@ -72,6 +74,8 @@ void update_texture(SDL_Renderer* renderer, SDL_Texture* texture, Grid* grid) {
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
+
+    free(pixels);
 }
 
 void sdl_quit(AppData data) {

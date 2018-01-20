@@ -12,10 +12,10 @@
 int main(int argc, char** argv)
 {
     // Settings
-    int screen_width = 1280;
-    int screen_height = 720;
-    int grid_width = screen_width/2;
-    int grid_height = screen_height/2;
+    int screen_width = 2560;
+    int screen_height = 1440;
+    int grid_width = screen_width;
+    int grid_height = screen_height;
 
     // Parse arguments
     char fullscreen = 0;
