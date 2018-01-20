@@ -59,12 +59,12 @@ void grid_step(Grid * grid) {
             living += grid->data[x_after][y];
             living += grid->data[x_after][y_after];
             
-            if (living < 2 || living > 3) {
-                new_data[x][y] = 0;
-            } else if (living == 3) {
-                new_data[x][y] = 1;
+            // If two living neighbours, cell will keep current state
+            if (living == 2) {
+                new_data[x][y] = grid->data[x][y];
+            // If three living neighbours, cell will live. Less than two or more than three results in death.
             } else {
-                new_data[x][y] = grid->data[x][y]*1;
+                new_data[x][y] = living == 3;
             }
         }
     }

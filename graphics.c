@@ -1,9 +1,21 @@
 #import "graphics.h"
 #import "grid.c"
 
+TTF_Font* courier_new_font;
+SDL_Color white_color = {255, 255, 255}; 
+
 void sdl_init() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0){
         fprintf(stderr, "could not initialize SDL: %s\n", SDL_GetError());
+    }
+
+    if (TTF_Init() != 0){
+        fprintf(stderr, "could not initialize SDL_ttf: %s\n", TTF_GetError());
+    }
+
+    courier_new_font = TTF_OpenFont("/Library/Fonts/Courier New.ttf", 11);
+    if (courier_new_font == NULL){
+        fprintf(stderr, "could not load font: %s\n", TTF_GetError());
     }
 }
 
@@ -29,7 +41,7 @@ SDL_Window* sdl_create_window(int width, int height, int fullscreen) {
 }
 
 SDL_Renderer* sdl_create_renderer(SDL_Window* window) {
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 
     if (renderer == NULL){
         SDL_DestroyWindow(window);
@@ -40,7 +52,7 @@ SDL_Renderer* sdl_create_renderer(SDL_Window* window) {
     return renderer;
 }
 
-SDL_Texture* sdl_create_texture(int width, int height, SDL_Renderer* renderer, SDL_Window* window) {
+SDL_Texture* sdl_create_grid_texture(int width, int height, SDL_Renderer* renderer, SDL_Window* window) {
     SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_STATIC, width, height);    
 
     if (texture == NULL){
@@ -53,7 +65,7 @@ SDL_Texture* sdl_create_texture(int width, int height, SDL_Renderer* renderer, S
     return texture;
 }
 
-void update_texture(SDL_Renderer* renderer, SDL_Texture* texture, Grid* grid) {
+void update_grid_texture(SDL_Texture* texture, Grid* grid) {
     int width;
     int height;
 
@@ -71,16 +83,34 @@ void update_texture(SDL_Renderer* renderer, SDL_Texture* texture, Grid* grid) {
     SDL_AtomicUnlock(&grid->read_lock);
 
     SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(char));
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
-    SDL_RenderPresent(renderer);
 
     free(pixels);
 }
 
-void sdl_quit(AppData data) {
-    SDL_DestroyTexture(data.texture);
-    SDL_DestroyRenderer(data.renderer);
-    SDL_DestroyWindow(data.window);
+void update_debug_texture(char* text, AppData * app_data) {
+    SDL_Surface* surface = TTF_RenderText_Solid(courier_new_font, text, white_color);
+    app_data->debug_texture = SDL_CreateTextureFromSurface(app_data->renderer, surface);
+    
+    int window_width;
+    SDL_GetWindowSize(app_data->window, &window_width, NULL);
+
+    app_data->debug_rect->w = surface->w;
+    app_data->debug_rect->h = surface->h;
+    app_data->debug_rect->x = window_width - surface->w;
+    app_data->debug_rect->y = 0;
+}
+
+void render(AppData * app_data) {
+    SDL_RenderClear(app_data->renderer);
+    SDL_RenderCopy(app_data->renderer, app_data->grid_texture, NULL, NULL);
+    SDL_RenderCopy(app_data->renderer, app_data->debug_texture, NULL, app_data->debug_rect);
+    SDL_RenderPresent(app_data->renderer);
+}
+
+void sdl_quit(AppData * data) {
+    SDL_DestroyTexture(data->grid_texture);
+    SDL_DestroyTexture(data->debug_texture);    
+    SDL_DestroyRenderer(data->renderer);
+    SDL_DestroyWindow(data->window);
     SDL_Quit();
 }

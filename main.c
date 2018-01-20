@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 
 #include "grid.c"
 #include "main.h"
@@ -12,10 +13,10 @@
 int main(int argc, char** argv)
 {
     // Settings
-    int screen_width = 2560;
-    int screen_height = 1440;
-    int grid_width = screen_width;
-    int grid_height = screen_height;
+    int screen_width = 1280;
+    int screen_height = 720;
+    int grid_width = screen_width/2;
+    int grid_height = screen_height/2;
 
     // Parse arguments
     char fullscreen = 0;
@@ -33,11 +34,15 @@ int main(int argc, char** argv)
     sdl_init();
     data.window = sdl_create_window(screen_width, screen_height, fullscreen);
     data.renderer = sdl_create_renderer(data.window);
-    data.texture = sdl_create_texture(grid_width, grid_height, data.renderer, data.window);
+    data.grid_texture = sdl_create_grid_texture(grid_width, grid_height, data.renderer, data.window);
+    SDL_Rect debug_rect;
+    data.debug_rect = &debug_rect;
     // Grid
     Grid grid = grid_init(grid_width, grid_height);
     data.grid = &grid;
     // Initial values
+    data.fps = 0;
+    data.ups = 0;
     data.quit = 0;
 
     // Draw loop, run in separate thread.
@@ -52,7 +57,7 @@ int main(int argc, char** argv)
     // Quit
     SDL_WaitThread(draw_thread, NULL);
     SDL_WaitThread(update_thread, NULL);
-    sdl_quit(data);
+    sdl_quit(&data);
 
     return 0;
 }
@@ -60,10 +65,28 @@ int main(int argc, char** argv)
 int draw_loop(void *data) {
     AppData* app_data = (AppData*)(data);
 
+    Uint32 previous_ticks = 0;
+    float frametime = 60;
     while (!app_data->quit) {
-        update_texture(app_data->renderer, app_data->texture, app_data->grid);
-        
-        SDL_Delay(1/60);
+        // Calculate fps
+        Uint32 ticks = SDL_GetTicks();
+        Uint32 delta_ticks = ticks - previous_ticks;
+        previous_ticks = ticks;
+
+        // Calculate frametime by actual frametime and previous frametime for smoothing
+        float smooth_factor = 0.1; 
+        frametime = smooth_factor * delta_ticks + (1.0 - smooth_factor) * frametime;
+        app_data->fps = 1000.0 / frametime;
+
+        // Update texture
+        update_grid_texture(app_data->grid_texture, app_data->grid);
+
+        char debug_text_format[] = "FPS: %.1f UPS: %.1f";
+        char debug_text[1000];
+        sprintf(debug_text, debug_text_format, app_data->fps, app_data->ups);
+        update_debug_texture(debug_text, app_data);
+
+        render(app_data);
     }
 
     return 0;
@@ -98,8 +121,21 @@ int event_loop(void *data) {
 int update_loop(void *data) {
     AppData* app_data = (AppData*)(data);
 
+    Uint32 previous_ticks = 0;
+    float updatetime = 60;
     while (!app_data->quit) {
+        // Generate new generation
         grid_step(app_data->grid);
+
+        // Calculate ups
+        Uint32 ticks = SDL_GetTicks();
+        Uint32 delta_ticks = ticks - previous_ticks;
+        previous_ticks = ticks;
+
+        // Calculate updatetime by actual updatetime and previous updatetime for smoothing
+        float smooth_factor = 0.1; 
+        updatetime = smooth_factor * delta_ticks + (1.0 - smooth_factor) * updatetime;
+        app_data->ups = 1000.0 / updatetime;
     }
 
     return 0;
