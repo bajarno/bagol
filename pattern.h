@@ -1,4 +1,4 @@
-typedef enum {
+typedef enum Pattern {
     // Oscillators
     BLINKER,
 
@@ -10,3 +10,4 @@ typedef enum {
 } Pattern;
 
 void add_pattern(Pattern, Grid*, int, int);
+void set_state(Grid*, int, int, uint8_t);

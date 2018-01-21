@@ -15,8 +15,8 @@ int main(int argc, char** argv)
     // Settings
     int screen_width = 1280;
     int screen_height = 720;
-    int grid_width = screen_width/2;
-    int grid_height = screen_height/2;
+    int grid_width = screen_width;
+    int grid_height = screen_height;
 
     // Parse arguments
     char fullscreen = 0;
@@ -98,7 +98,9 @@ int event_loop(void *data) {
     // Event loop
     SDL_Event event;
     while (SDL_WaitEvent(&event) && !app_data->quit) {
-        if (event.type == SDL_KEYDOWN) {
+        if (event.type == SDL_QUIT) {
+            app_data->quit = 1;
+        } else if (event.type == SDL_KEYDOWN) {
             if (event.key.keysym.sym == SDLK_ESCAPE) {
                 app_data->quit = 1;
             } else if (event.key.keysym.sym == SDLK_SPACE) {
