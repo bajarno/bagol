@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     SDL_Rect debug_rect;
     data.debug_rect = &debug_rect;
     // Grid
-    Grid grid = grid_init(grid_width, grid_height);
+    Grid grid = grid_init(grid_width, grid_height, 0, BASIC_DIFF);
     data.grid = &grid;
     // Initial values
     data.fps = 0;

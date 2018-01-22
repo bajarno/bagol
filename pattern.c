@@ -30,24 +30,30 @@ void add_pattern(Pattern pattern, Grid * grid, int x, int y) {
 
 void set_state(Grid * grid, int x, int y, uint8_t state) {
     if (grid->algorithm == BASIC) {
-        grid->data[x][y] = state;
+        grid->data[x][y] = state * STATEMASK;
+    } else if (grid->algorithm == BASIC_DIFF) {
+        grid->data[x][y] |= (STATEMASK | CHECKMASK);
+
+        grid->data[x-1][y-1] |= CHECKMASK;
+        grid->data[x-1][y] |= CHECKMASK;
+        grid->data[x-1][y+1] |= CHECKMASK;
+        grid->data[x][y-1] |= CHECKMASK;
+        grid->data[x][y+1] |= CHECKMASK;
+        grid->data[x+1][y-1] |= CHECKMASK;
+        grid->data[x+1][y] |= CHECKMASK;
+        grid->data[x+1][y+1] |= CHECKMASK;
     } else if (grid->algorithm == NEIGHBOURS) {
-        int x_before = (x + grid->width - 1) % grid->width;
-        int x_after = (x + 1) % grid->width;
-        int y_before = (y + grid->height - 1) % grid->height;
-        int y_after = (y + 1) % grid->height;
+        // uint8_t delta = state ? 1 : -1;
 
-        uint8_t delta = state ? 1 : -1;
+        // grid->data[x][y] = state;
 
-        grid->data[x][y] = state;
-
-        grid->metadata[x_before][y_before] += delta;
-        grid->metadata[x_before][y] += delta;
-        grid->metadata[x_before][y_after] += delta;
-        grid->metadata[x][y_before] += delta;
-        grid->metadata[x][y_after] += delta;
-        grid->metadata[x_after][y_before] += delta;
-        grid->metadata[x_after][y] += delta;
-        grid->metadata[x_after][y_after] += delta;
+        // grid->metadata[x_before][y_before] += delta;
+        // grid->metadata[x_before][y] += delta;
+        // grid->metadata[x_before][y_after] += delta;
+        // grid->metadata[x][y_before] += delta;
+        // grid->metadata[x][y_after] += delta;
+        // grid->metadata[x_after][y_before] += delta;
+        // grid->metadata[x_after][y] += delta;
+        // grid->metadata[x_after][y_after] += delta;
     }
 }

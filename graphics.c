@@ -76,7 +76,7 @@ void update_grid_texture(SDL_Texture* texture, Grid* grid) {
 
     SDL_AtomicLock(&grid->read_lock);
     for (int i = 0; i < grid->width * grid->height; i++) {
-        pixels[i] = grid->data[i % grid->width][i / grid->width] * 255;
+        pixels[i] = (grid->data[i % grid->width][i / grid->width] & STATEMASK) ? 255 : 0;
     }
     SDL_AtomicUnlock(&grid->read_lock);
 
