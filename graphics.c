@@ -86,6 +86,8 @@ void update_grid_texture(SDL_Texture* texture, Grid* grid) {
 }
 
 void update_debug_texture(char* text, AppData * app_data) {
+    SDL_DestroyTexture(app_data->debug_texture);
+
     SDL_Surface* surface = TTF_RenderText_Solid(courier_new_font, text, white_color);
     app_data->debug_texture = SDL_CreateTextureFromSurface(app_data->renderer, surface);
     
@@ -96,6 +98,8 @@ void update_debug_texture(char* text, AppData * app_data) {
     app_data->debug_rect->h = surface->h;
     app_data->debug_rect->x = window_width - surface->w;
     app_data->debug_rect->y = 0;
+
+    SDL_FreeSurface(surface);
 }
 
 void render(AppData * app_data) {

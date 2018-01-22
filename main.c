@@ -37,8 +37,10 @@ int main(int argc, char** argv)
     data.grid_texture = sdl_create_grid_texture(grid_width, grid_height, data.renderer, data.window);
     SDL_Rect debug_rect;
     data.debug_rect = &debug_rect;
+    data.debug_texture = SDL_CreateTexture(data.renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_STATIC, 0, 0);
+
     // Grid
-    Grid grid = grid_init(grid_width, grid_height, 0, BASIC_DIFF);
+    Grid grid = grid_init(grid_width, grid_height, 1, BASIC_DIFF);
     data.grid = &grid;
     // Initial values
     data.fps = 0;
