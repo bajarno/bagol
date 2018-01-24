@@ -13,8 +13,7 @@ void sdl_init() {
         fprintf(stderr, "could not initialize SDL_ttf: %s\n", TTF_GetError());
     }
 
-    // courier_new_font = TTF_OpenFont("/Library/Fonts/Courier New.ttf", 11);
-    courier_new_font = TTF_OpenFont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 11);
+    courier_new_font = TTF_OpenFont("Courier New.ttf", 11);
 
 
     if (courier_new_font == NULL){
@@ -79,7 +78,7 @@ void update_grid_texture(SDL_Texture* texture, Grid* grid) {
 
     SDL_AtomicLock(&grid->read_lock);
     for (int i = 0; i < grid->width * grid->height; i++) {
-        pixels[i] = (grid->data[i % grid->width][i / grid->width] & STATEMASK) ? 255 : 0;
+        pixels[i] = (grid->data[i % grid->width + 1][i / grid->width + 1] & STATEMASK) ? 255 : 0;
     }
     SDL_AtomicUnlock(&grid->read_lock);
 
