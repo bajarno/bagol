@@ -43,17 +43,18 @@ void set_state(Grid * grid, int x, int y, uint8_t state) {
         grid->data[x+1][y] |= CHECKMASK;
         grid->data[x+1][y+1] |= CHECKMASK;
     } else if (grid->algorithm == NEIGHBOURS) {
-        // uint8_t delta = state ? 1 : -1;
+        uint8_t delta = state ? 1 : -1;
+    
+        grid->data[x][y] &= STATEUNMASK;
+        grid->data[x][y] |= state * STATEMASK;
 
-        // grid->data[x][y] = state;
-
-        // grid->metadata[x_before][y_before] += delta;
-        // grid->metadata[x_before][y] += delta;
-        // grid->metadata[x_before][y_after] += delta;
-        // grid->metadata[x][y_before] += delta;
-        // grid->metadata[x][y_after] += delta;
-        // grid->metadata[x_after][y_before] += delta;
-        // grid->metadata[x_after][y] += delta;
-        // grid->metadata[x_after][y_after] += delta;
+        grid->data[x-1][y-1] += delta;
+        grid->data[x-1][y] += delta;
+        grid->data[x-1][y+1] += delta;
+        grid->data[x][y-1] += delta;
+        grid->data[x][y+1] += delta;
+        grid->data[x+1][y-1] += delta;
+        grid->data[x+1][y] += delta;
+        grid->data[x+1][y+1] += delta;
     }
 }

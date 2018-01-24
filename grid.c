@@ -187,64 +187,71 @@ uint8_t get_next_state_basic(uint8_t ** data, int x, int y) {
 }
 
 void grid_step_neighbours(Grid * grid) {
-    // SDL_AtomicLock(&grid->write_lock);
-    // uint8_t ** new_data = temp_data;
-    // uint8_t ** new_metadata = temp_metadata;
+    SDL_AtomicLock(&grid->write_lock);
+    uint8_t ** new_data = grid->data_prev;
 
-    // // Remove these 4 lines for super trippy effect
-    // for (int i = 0; i < grid->width; i++) {
-    //     memcpy(new_data[i], grid->data[i], grid->height);
-    //     memcpy(new_metadata[i], grid->metadata[i], grid->height);
-    // }
+    for (int x = 1; x < (grid->width + 1); x++) {
+        memcpy(new_data[x], grid->data[x], (grid->height + 2) * sizeof(*(grid->data[x])));
+    }    
+
+    // Calculate new values
+    for (int x = 1; x < (grid->width + 1); x++) {
+        for (int y = 1; y < (grid->height + 1); y++) {
+            int living = grid->data[x][y] & NEIGHBOURSMASK;
+            
+            int new_state;
+
+            // If two living neighbours, cell will keep current state
+            if (living == 2) {
+                new_state = grid->data[x][y] & STATEMASK;
+            // If three living neighbours, cell will live. Less than two or more than three results in death.
+            } else {
+                new_state = (living == 3) * STATEMASK;
+            }
+
+            // Value needs to be updated
+            if (new_state != (grid->data[x][y] & STATEMASK)) {
+                uint8_t delta = new_state ? 1 : -1;
+
+                new_data[x-1][y-1] += delta;
+                new_data[x-1][y] += delta;
+                new_data[x-1][y+1] += delta;
+                new_data[x][y-1] += delta;
+                new_data[x][y+1] += delta;
+                new_data[x+1][y-1] += delta;
+                new_data[x+1][y] += delta;
+                new_data[x+1][y+1] += delta;
+
+                new_data[x][y] &= STATEUNMASK;
+                new_data[x][y] |= new_state;
+            }
+        }
+
+        // Fix data on the edge in case of a cyclic grid
+        if (0) { // grid->cyclic) { TODO: FIX
+            uint8_t neighbours0 = grid->data[x][0] & NEIGHBOURSMASK;
+            neighbours0 += (new_data[x][0] & NEIGHBOURSMASK) + (new_data[x][grid->height] & NEIGHBOURSMASK) - 2 * neighbours0;
+            neighbours0 |= (grid->data[x][0] & NEIGHBOURSUNMASK);
+
+            new_data[x][0] = neighbours0;
+            new_data[x][grid->height] = neighbours0;
+
+
+            uint8_t neighbours1 = grid->data[x][1] & NEIGHBOURSMASK;
+            neighbours1 += (new_data[x][1] & NEIGHBOURSMASK) + (new_data[x][grid->height + 1] & NEIGHBOURSMASK)  - 2 * neighbours1;
+            
+            neighbours1 |= (grid->data[x][1] & NEIGHBOURSUNMASK);
+            new_data[x][grid->height + 1] = neighbours1;
+            new_data[x][1] = neighbours1;
+        }
+    }
     
-    // // Calculate new values
-    // for (int x = 0; x < grid->width; x++) {
-    //     for (int y = 0; y < grid->height; y++) {
-    //         int living = grid->metadata[x][y];
-
-    //         int new_state;
-
-    //         // If two living neighbours, cell will keep current state
-    //         if (living == 2) {
-    //             new_state = grid->data[x][y];
-    //         // If three living neighbours, cell will live. Less than two or more than three results in death.
-    //         } else {
-    //             new_state = living == 3;
-    //         }
-
-    //         // Value needs to be updated
-    //         if (new_state != grid->data[x][y]) {
-    //             // Calculate inline for performance
-    //             int x_before = (x + grid->width - 1) % grid->width;
-    //             int x_after = (x + 1) % grid->width;
-    //             int y_before = (y + grid->height - 1) % grid->height;
-    //             int y_after = (y + 1) % grid->height;
-
-    //             uint8_t delta = new_state ? 1 : -1;
-
-    //             new_metadata[x_before][y_before] += delta;
-    //             new_metadata[x_before][y] += delta;
-    //             new_metadata[x_before][y_after] += delta;
-    //             new_metadata[x][y_before] += delta;
-    //             new_metadata[x][y_after] += delta;
-    //             new_metadata[x_after][y_before] += delta;
-    //             new_metadata[x_after][y] += delta;
-    //             new_metadata[x_after][y_after] += delta;
-
-    //             new_data[x][y] = new_state;
-    //         }
-    //     }
-    // }
+    SDL_AtomicLock(&grid->read_lock);
+    grid->data_prev = grid->data;
+    grid->data = new_data;
+    SDL_AtomicUnlock(&grid->read_lock);
     
-    // // // Free memory of previous data matrix
-    // SDL_AtomicLock(&grid->read_lock);
-    // temp_data = grid->data;
-    // temp_metadata = grid->metadata;
-    // grid->data = new_data;
-    // grid->metadata = new_metadata;
-    // SDL_AtomicUnlock(&grid->read_lock);
-    
-    // SDL_AtomicUnlock(&grid->write_lock);
+    SDL_AtomicUnlock(&grid->write_lock);
 }
 
 // Set whole grid to empty cells.

@@ -7,6 +7,9 @@
 #define CHANGEMASK 32 // The 6th bit indicates whether the cell changed value
 #define CHANGEUNMASK 223
 
+#define NEIGHBOURSMASK 15 // The first four bits indicate the amount of living neighbours
+#define NEIGHBOURSUNMASK 240
+
 typedef enum Algorithm {
     // Most basic implementation. Checks all neighbours for each cell each generation.
     // metadata: Unused

@@ -13,7 +13,10 @@ void sdl_init() {
         fprintf(stderr, "could not initialize SDL_ttf: %s\n", TTF_GetError());
     }
 
-    courier_new_font = TTF_OpenFont("/Library/Fonts/Courier New.ttf", 11);
+    // courier_new_font = TTF_OpenFont("/Library/Fonts/Courier New.ttf", 11);
+    courier_new_font = TTF_OpenFont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 11);
+
+
     if (courier_new_font == NULL){
         fprintf(stderr, "could not load font: %s\n", TTF_GetError());
     }

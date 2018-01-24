@@ -13,8 +13,8 @@
 int main(int argc, char** argv)
 {
     // Settings
-    int screen_width = 1280;
-    int screen_height = 720;
+    int screen_width = 720;
+    int screen_height = 450;
     int grid_width = screen_width;
     int grid_height = screen_height;
 
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
     data.debug_texture = SDL_CreateTexture(data.renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_STATIC, 0, 0);
 
     // Grid
-    Grid grid = grid_init(grid_width, grid_height, 1, BASIC_DIFF);
+    Grid grid = grid_init(grid_width, grid_height, 1, NEIGHBOURS);
     data.grid = &grid;
     // Initial values
     data.fps = 0;
