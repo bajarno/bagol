@@ -19,7 +19,9 @@ typedef enum Algorithm {
 
     // Keeps track of amount of living neighbours for each cell.
     // metadata: Contains amount of neighbours
-    NEIGHBOURS
+    NEIGHBOURS,
+
+    NEIGHBOURS_DIFF
 } Algorithm;
 
 // Struct representing grid data.

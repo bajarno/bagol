@@ -2,6 +2,7 @@
 #include "step/basic.c"
 #include "step/basic_diff.c"
 #include "step/neighbours.c"
+#include "step/neighbours_diff.c"
 
 // Initialize grid struct instance
 Grid grid_init(int width, int height, int cyclic, Algorithm algorithm) {
@@ -64,6 +65,9 @@ void grid_step(Grid * grid) {
             break;
         case NEIGHBOURS:
             grid_step_neighbours(grid);
+            break;
+        case NEIGHBOURS_DIFF:
+            grid_step_neighbours_diff(grid);
             break;
     }
 }
