@@ -1,5 +1,4 @@
-#import "graphics.h"
-#import "grid.c"
+#include "graphics.h"
 
 TTF_Font* courier_new_font;
 SDL_Color white_color = {255, 255, 255}; 

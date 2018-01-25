@@ -226,23 +226,16 @@ void grid_step_neighbours(Grid * grid) {
                 new_data[x][y] |= new_state;
             }
         }
+    }
 
-        // Fix data on the edge in case of a cyclic grid
-        if (0) { // grid->cyclic) { TODO: FIX
-            uint8_t neighbours0 = grid->data[x][0] & NEIGHBOURSMASK;
-            neighbours0 += (new_data[x][0] & NEIGHBOURSMASK) + (new_data[x][grid->height] & NEIGHBOURSMASK) - 2 * neighbours0;
-            neighbours0 |= (grid->data[x][0] & NEIGHBOURSUNMASK);
+    // Fix data on the edge in case of a cyclic grid
+    if (grid->cyclic) {
+        for (int x = 1; x < (grid->width + 1); x++) {
+            new_data[x][grid->height] += new_data[x][0] - grid->data[x][0];
+            new_data[x][0] = new_data[x][grid->height];
 
-            new_data[x][0] = neighbours0;
-            new_data[x][grid->height] = neighbours0;
-
-
-            uint8_t neighbours1 = grid->data[x][1] & NEIGHBOURSMASK;
-            neighbours1 += (new_data[x][1] & NEIGHBOURSMASK) + (new_data[x][grid->height + 1] & NEIGHBOURSMASK)  - 2 * neighbours1;
-            
-            neighbours1 |= (grid->data[x][1] & NEIGHBOURSUNMASK);
-            new_data[x][grid->height + 1] = neighbours1;
-            new_data[x][1] = neighbours1;
+            new_data[x][1] += new_data[x][grid->height + 1] - grid->data[x][grid->height + 1];
+            new_data[x][grid->height + 1] = new_data[x][1];
         }
     }
     
