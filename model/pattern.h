@@ -6,7 +6,8 @@ typedef enum Pattern {
     GLIDER,
 
     // Other
-    RPENTOMINO
+    RPENTOMINO,
+    RPENTOMINO_SPAM
 } Pattern;
 
 void add_pattern(Pattern, Grid*, int, int);

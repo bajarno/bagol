@@ -4,6 +4,11 @@ void grid_step_basic_diff(Grid * grid) {
 
     for (int x = 1; x < (grid->width + 1); x++) {
         memcpy(new_data[x], grid->data[x], (grid->height + 2) * sizeof(*(grid->data[x])));
+
+        // Set the check bits of the duplicate cells to zero. These have no function after the
+        // content is copied at the end of a step and will always stay at one otherwise.
+        new_data[x][0] &= CHECKUNMASK;
+        new_data[x][grid->height+1] &= CHECKUNMASK;
     }
 
     // Calculate new values
@@ -70,10 +75,10 @@ void grid_step_basic_diff(Grid * grid) {
     if (grid->cyclic) {
         for (int x = 1; x < (grid->width + 1); x++) {
             // Fix data on the edge in case of a cyclic grid
-            new_data[x][grid->height] |= new_data[x][0] & CHECKMASK;
+            new_data[x][grid->height] |= (new_data[x][0] & CHECKMASK);
             new_data[x][0] = new_data[x][grid->height];
 
-            new_data[x][1] |= new_data[x][grid->height + 1] & CHECKMASK;
+            new_data[x][1] |= (new_data[x][grid->height + 1] & CHECKMASK);
             new_data[x][grid->height + 1] = new_data[x][1];
         }
     }

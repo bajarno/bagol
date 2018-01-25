@@ -13,10 +13,10 @@
 int main(int argc, char** argv)
 {
     // Settings
-    int screen_width = 720;
-    int screen_height = 450;
-    int grid_width = screen_width/2;
-    int grid_height = screen_height/2;
+    int screen_width = 1280;
+    int screen_height = 720;
+    int grid_width = screen_width*2;
+    int grid_height = screen_height*2;
 
     // Parse arguments
     char fullscreen = 0;
@@ -107,6 +107,8 @@ int event_loop(void *data) {
                 app_data->quit = 1;
             } else if (event.key.keysym.sym == SDLK_SPACE) {
                 grid_clear(app_data->grid);
+            } else if (event.key.keysym.sym == 'c') {
+                add_pattern(RPENTOMINO_SPAM, app_data->grid, 0, 0);
             }
         } else if (event.type == SDL_MOUSEBUTTONDOWN) {
             int width;
@@ -137,7 +139,7 @@ int update_loop(void *data) {
         previous_ticks = ticks;
 
         // Calculate updatetime by actual updatetime and previous updatetime for smoothing
-        float smooth_factor = 0.1; 
+        float smooth_factor = 0.01; 
         updatetime = smooth_factor * delta_ticks + (1.0 - smooth_factor) * updatetime;
         app_data->ups = 1000.0 / updatetime;
     }

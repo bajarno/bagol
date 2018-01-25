@@ -4,6 +4,11 @@ void grid_step_neighbours_diff(Grid * grid) {
 
     for (int x = 1; x < (grid->width + 1); x++) {
         memcpy(new_data[x], grid->data[x], (grid->height + 2) * sizeof(*(grid->data[x])));
+
+        // Set the check bits of the duplicate cells to zero. These have no function after the
+        // content is copied at the end of a step and will always stay at one otherwise.
+        new_data[x][0] &= CHECKUNMASK;
+        new_data[x][grid->height+1] &= CHECKUNMASK;
     }
 
     // Calculate new values
@@ -23,6 +28,14 @@ void grid_step_neighbours_diff(Grid * grid) {
                 }
 
                 if (new_state != (grid->data[x][y] & STATEMASK)) {
+                    // Set new state
+                    new_data[x][y] &= STATEUNMASK;
+                    new_data[x][y] |= new_state;
+
+                    // Indicate change in value
+                    new_data[x][y] |= CHANGEMASK;
+
+                    // Adjust neighbour count in neighbouring cells
                     uint8_t delta = new_state ? 1 : -1;
 
                     new_data[x-1][y-1] += delta;
@@ -34,11 +47,7 @@ void grid_step_neighbours_diff(Grid * grid) {
                     new_data[x+1][y] += delta;
                     new_data[x+1][y+1] += delta;
 
-                    new_data[x][y] &= STATEUNMASK;
-                    new_data[x][y] |= new_state;
-
-                    new_data[x][y] |= CHANGEMASK;
-                    
+                    // Indicate that neighbouring cells need to be checked in the next generation.
                     new_data[x-1][y-1] |= CHECKMASK;
                     new_data[x-1][y] |= CHECKMASK;
                     new_data[x-1][y+1] |= CHECKMASK;
@@ -48,8 +57,11 @@ void grid_step_neighbours_diff(Grid * grid) {
                     new_data[x+1][y] |= CHECKMASK;
                     new_data[x+1][y+1] |= CHECKMASK;
                 } else {
+                    // Indicate no change in value
                     new_data[x][y] &= CHANGEUNMASK;
 
+                    // Check whether on of the neighbours changed. If not, this cell does not need to
+                    // be checked in the next generation.
                     uint8_t neighbours_changed = 
                         (new_data[x-1][y-1] |
                         new_data[x-1][y] |
@@ -70,14 +82,14 @@ void grid_step_neighbours_diff(Grid * grid) {
     }
 
     if (grid->cyclic) {
+        // Get the mirrored cells back in sync with the cell they represent.
         for (int x = 1; x < (grid->width + 1); x++) {
-            // Fix data on the edge in case of a cyclic grid
-            new_data[x][grid->height] += new_data[x][0] - grid->data[x][0];
-            new_data[x][grid->height] |= new_data[x][0] & CHECKMASK;
+            new_data[x][grid->height] |= (new_data[x][0] & CHECKMASK);
+            new_data[x][grid->height] += (new_data[x][0] & NEIGHBOURSMASK) - (grid->data[x][0] & NEIGHBOURSMASK);
             new_data[x][0] = new_data[x][grid->height];
 
-            new_data[x][1] += new_data[x][grid->height + 1] - grid->data[x][grid->height + 1];
-            new_data[x][1] |= new_data[x][grid->height + 1] & CHECKMASK;
+            new_data[x][1] |= (new_data[x][grid->height + 1] & CHECKMASK);
+            new_data[x][1] += (new_data[x][grid->height + 1] & NEIGHBOURSMASK) - (grid->data[x][grid->height + 1] & NEIGHBOURSMASK);
             new_data[x][grid->height + 1] = new_data[x][1];
         }
     }

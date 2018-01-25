@@ -8,20 +8,18 @@ void grid_step_basic(Grid * grid) {
         for (int y = 1; y < (grid->height + 1); y++) {
             int living = 0;
 
-            living += grid->data[x-1][y-1] & STATEMASK;
-            living += grid->data[x-1][y] & STATEMASK;
-            living += grid->data[x-1][y+1] & STATEMASK;
-            living += grid->data[x][y-1] & STATEMASK;
-            living += grid->data[x][y+1] & STATEMASK;
-            living += grid->data[x+1][y-1] & STATEMASK;
-            living += grid->data[x+1][y] & STATEMASK;
-            living += grid->data[x+1][y+1] & STATEMASK;
-
-            uint8_t new_state;
+            living += grid->data[x-1][y-1];
+            living += grid->data[x-1][y];
+            living += grid->data[x-1][y+1];
+            living += grid->data[x][y-1];
+            living += grid->data[x][y+1];
+            living += grid->data[x+1][y-1];
+            living += grid->data[x+1][y];
+            living += grid->data[x+1][y+1];
 
             // If two living neighbours, cell will keep current state
             if (living == (2 * STATEMASK)) {
-                new_data[x][y] = grid->data[x][y] & STATEMASK;
+                new_data[x][y] = grid->data[x][y];
             // If three living neighbours, cell will live. Less than two or more than three results in death.
             } else {
                 new_data[x][y] = ((living == (3 * STATEMASK)) * STATEMASK);

@@ -77,6 +77,12 @@ void update_grid_texture(SDL_Texture* texture, Grid* grid) {
 
     SDL_AtomicLock(&grid->read_lock);
     for (int i = 0; i < grid->width * grid->height; i++) {
+        // DEBUG VIEW - uncomment to visualise check status of cells
+        // uint8_t state = (grid->data[i % grid->width + 1][i / grid->width + 1] & STATEMASK) / STATEMASK;
+        // uint8_t check = (grid->data[i % grid->width + 1][i / grid->width + 1] & CHECKMASK) / CHECKMASK;
+        // uint8_t color = state * 224 + check * 3;
+        // pixels[i] = color;
+
         pixels[i] = (grid->data[i % grid->width + 1][i / grid->width + 1] & STATEMASK) ? 255 : 0;
     }
     SDL_AtomicUnlock(&grid->read_lock);
