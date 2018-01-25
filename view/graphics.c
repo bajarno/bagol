@@ -12,7 +12,7 @@ void sdl_init() {
         fprintf(stderr, "could not initialize SDL_ttf: %s\n", TTF_GetError());
     }
 
-    courier_new_font = TTF_OpenFont("Courier New.ttf", 11);
+    courier_new_font = TTF_OpenFont("./view/Courier New.ttf", 11);
 
 
     if (courier_new_font == NULL){

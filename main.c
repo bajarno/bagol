@@ -5,10 +5,10 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-#include "grid.c"
+#include "model/grid.c"
 #include "main.h"
-#include "graphics.c"
-#include "pattern.c"
+#include "view/graphics.c"
+#include "model/pattern.c"
 
 int main(int argc, char** argv)
 {
