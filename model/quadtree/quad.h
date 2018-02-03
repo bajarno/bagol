@@ -1,6 +1,3 @@
-#define INITIAL_QUAD_POSITION 3689348814741910323 // 0011001100110011001100110011001100110011001100110011001100110011
-#define INITIAL_QUAD_METADATA 255
-
 // Represents a node in a quadtree.
 typedef struct Quad {
     // Value indicating the level of the quad. Cell level is 0.
@@ -13,12 +10,12 @@ typedef struct Quad {
     uint8_t metadata;
 
     // Pointers to subquads. If level = 1, points to a block of cells. Otherwise, points to other quad instances.
-    
-    // TEMP: 2d matrix of void pointers
-    void *** sub_quads;
+    void ** sub_quads;
 } Quad;
 
-Quad * quad_init();
+Quad * quad_init(uint32_t, uint32_t, uint8_t);
 void quad_step(Quad*, int);
 Leaf * quad_get_leaf(Quad*, uint32_t, uint32_t);
 void quad_step_leaf(Quad*, uint32_t, uint32_t, int);
+int quad_global_to_local_pos(Quad*);
+int global_to_local_pos(uint32_t, uint32_t, uint8_t);

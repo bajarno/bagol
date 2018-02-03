@@ -2,11 +2,11 @@
 
 #include "leaf.h"
 
-Leaf * leaf_init() {
+Leaf * leaf_init(uint32_t x, uint32_t y) {
     Leaf * leaf = malloc(sizeof(Leaf));
 
-    leaf->x = 0;
-    leaf->y = 0;
+    leaf->x = x;
+    leaf->y = y;
 
     leaf->data = calloc(2, sizeof(*leaf->data));
 

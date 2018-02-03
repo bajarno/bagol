@@ -2,22 +2,16 @@
 
 #include "quad.h"
 
-Quad * quad_init() {
+Quad * quad_init(uint32_t x, uint32_t y, uint8_t level) {
     Quad * quad = malloc(sizeof(Quad));
 
-    quad->level = 1;
-    quad->x = 0;
-    quad->y = 0;
+    quad->level = level;
+    quad->x = x;
+    quad->y = y;
+    quad->metadata = 0;
 
-    // Allocate memory
-    quad->sub_quads = malloc(3 * sizeof(*quad->sub_quads));
-    for(int i = 0; i < 3; i++) {
-        quad->sub_quads[i] = malloc(3 * sizeof(Leaf));
-        
-        for (int j = 0; j < 3; j++) {
-            quad->sub_quads[i][j] = leaf_init();
-        }
-    }
+    // Allocate memory for pointers to sublayer
+    quad->sub_quads = calloc(4, sizeof(*quad->sub_quads));
 
     return quad;
 }
@@ -53,7 +47,7 @@ void quad_step(Quad * quad, int base_gen) {
 }
 
 Leaf * quad_get_leaf(Quad * quad, uint32_t x, uint32_t y) {
-    return (Leaf*)(quad->sub_quads[(x+3)%3][(y+3)%3]);
+    return (Leaf*)(quad->sub_quads[(x+3)%3]);
 }
 
 void quad_step_leaf(Quad * quad, uint32_t x, uint32_t y, int base_gen) {
@@ -143,4 +137,14 @@ void quad_step_leaf(Quad * quad, uint32_t x, uint32_t y, int base_gen) {
             leaf_mask(neighbour_west, new_gen, mask, data);
         }
     }
+}
+
+int quad_global_to_local_pos(Quad * quad) {
+    return global_to_local_pos(quad->x, quad->y, quad->level);
+}
+
+int global_to_local_pos(uint32_t x, uint32_t y, uint8_t level) {
+    uint32_t position_mask = 1 << level;
+
+    return ((x & position_mask) > 0) + ((y & position_mask) > 0) * 2;
 }

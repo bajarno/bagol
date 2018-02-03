@@ -7,6 +7,6 @@ typedef struct Leaf {
     Block * data;
 } Leaf;
 
-Leaf * leaf_init();
+Leaf * leaf_init(uint32_t, uint32_t);
 void leaf_step(Leaf*, int);
 void leaf_mask(Leaf*, int, Block, Block);
