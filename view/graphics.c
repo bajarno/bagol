@@ -54,7 +54,7 @@ SDL_Renderer* sdl_create_renderer(SDL_Window* window) {
 }
 
 SDL_Texture* sdl_create_grid_texture(int width, int height, SDL_Renderer* renderer, SDL_Window* window) {
-    SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_STATIC, width, height);    
+    SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA4444, SDL_TEXTUREACCESS_STATIC, width, height);    
 
     if (texture == NULL){
         SDL_DestroyRenderer(renderer);
@@ -73,7 +73,7 @@ void update_grid_texture(SDL_Texture* texture, Grid* grid) {
     SDL_QueryTexture(texture, NULL, NULL, &width, &height);
 
     int size = width * height;
-    uint8_t* pixels = malloc(size * sizeof(*pixels));
+    uint16_t* pixels = malloc(size * sizeof(*pixels));
 
     SDL_AtomicLock(&grid->read_lock);
     for (int i = 0; i < grid->width * grid->height; i++) {
@@ -83,11 +83,11 @@ void update_grid_texture(SDL_Texture* texture, Grid* grid) {
         // uint8_t color = state * 224 + check * 3;
         // pixels[i] = color;
 
-        pixels[i] = (grid->data[i % grid->width + 1][i / grid->width + 1] & STATEMASK) ? 255 : 0;
+        pixels[i] = (grid->data[i % grid->width + 1][i / grid->width + 1] & STATEMASK) ? 61167 : 4383;
     }
     SDL_AtomicUnlock(&grid->read_lock);
 
-    SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(uint8_t));
+    SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(uint16_t));
 
     free(pixels);
 }

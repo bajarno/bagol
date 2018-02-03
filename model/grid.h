@@ -31,6 +31,8 @@ typedef struct Grid {
 
     int cyclic;
 
+    long long gen_count;
+
     // The algorithm that is used for calculating new generations.
     Algorithm algorithm;
 

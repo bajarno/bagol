@@ -12,6 +12,7 @@ Grid grid_init(int width, int height, int cyclic, Algorithm algorithm) {
     grid.height = height;
     grid.cyclic = cyclic;
     grid.algorithm = algorithm;
+    grid.gen_count = 0;
 
     // Set lock values to 0 (unlocked)
     grid.write_lock = 0;

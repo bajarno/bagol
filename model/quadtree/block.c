@@ -39,7 +39,7 @@ Block block_step(Block data) {
 }
 
 // Print a block to console in bit form.
-void print_bits(Block data) {
+void block_print_bits(Block data) {
     Block mask = 1;
     for (int i = 0; i < 64; i++) {
         printf("%d", (data & mask) > 0);

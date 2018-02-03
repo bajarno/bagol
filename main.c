@@ -9,14 +9,35 @@
 #include "main.h"
 #include "view/graphics.c"
 #include "model/pattern.c"
+#include "model/quadtree/quad.c"
 
 int main(int argc, char** argv)
 {
+    // int current_gen = 0;
+    // Quad* quad = quad_init();
+
+
+
+    // Leaf* leaf = quad_get_leaf(quad, 2, 2);
+
+    // leaf->data[current_gen] = 4512636238561280;
+
+    // for (int i = 0; i < 1000; i++) {
+    //     quad_print_bits(quad, current_gen);
+    //     printf("\n\n");
+    //     getchar();
+    //     quad_step(quad, current_gen);
+
+    //     current_gen = !current_gen;
+    // }
+
+    // return 0;
+
     // Settings
     int screen_width = 1280;
     int screen_height = 720;
-    int grid_width = screen_width*2;
-    int grid_height = screen_height*2;
+    int grid_width = screen_width;
+    int grid_height = screen_height;
 
     // Parse arguments
     char fullscreen = 0;
@@ -83,9 +104,9 @@ int draw_loop(void *data) {
         // Update texture
         update_grid_texture(app_data->grid_texture, app_data->grid);
 
-        char debug_text_format[] = "FPS: %.1f UPS: %.1f";
+        char debug_text_format[] = "FPS: %.1f UPS: %.1f Gen: %d";
         char debug_text[1000];
-        sprintf(debug_text, debug_text_format, app_data->fps, app_data->ups);
+        sprintf(debug_text, debug_text_format, app_data->fps, app_data->ups, app_data->grid->gen_count);
         update_debug_texture(debug_text, app_data);
 
         render(app_data);
@@ -132,6 +153,7 @@ int update_loop(void *data) {
     while (!app_data->quit) {
         // Generate new generation
         grid_step(app_data->grid);
+        app_data->grid->gen_count++;
 
         // Calculate ups
         Uint32 ticks = SDL_GetTicks();
