@@ -16,4 +16,4 @@ uint64_t INTERNAL_EDGE_NW_MASK = 512; // Masks internal edges of block.
 typedef uint64_t Block;
 
 Block block_step(Block);
-void print_bits(Block);
+void block_print_bits(Block);

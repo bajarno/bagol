@@ -14,8 +14,5 @@ typedef struct Quad {
 } Quad;
 
 Quad * quad_init(uint32_t, uint32_t, uint8_t);
-void quad_step(Quad*, int);
-Leaf * quad_get_leaf(Quad*, uint32_t, uint32_t);
-void quad_step_leaf(Quad*, uint32_t, uint32_t, int);
 int quad_global_to_local_pos(Quad*);
 int global_to_local_pos(uint32_t, uint32_t, uint8_t);

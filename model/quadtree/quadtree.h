@@ -12,3 +12,6 @@ typedef struct QuadTree {
 
 QuadTree * tree_init();
 Leaf * tree_get_leaf(QuadTree*, uint32_t, uint32_t);
+void tree_step(QuadTree*);
+void tree_step_quad(QuadTree*, Quad*);
+void tree_step_leaf(QuadTree*, Leaf*);
