@@ -15,33 +15,18 @@
 int main(int argc, char **argv)
 {
     // Settings
-    int screen_width = 1200;
-    int screen_height = 1200;
+    int screen_width = 600;
+    int screen_height = 600;
     int grid_width = screen_width;
     int grid_height = screen_height;
 
-    // Parse arguments
-    int fullscreen = 0;
-    int debug_mode = 1;
     int data_structure = QUADTREE;
-
-    for (int i = 0; i < argc; i++)
-    {
-        if (strcmp(argv[i], "-f") == 0)
-        {
-            fullscreen = 1;
-        }
-        else if (strcmp(argv[i], "-d") == 0)
-        {
-            debug_mode = 1;
-        }
-    }
 
     // Setup data
     AppData data;
 
     // Graphics
-    data.render_data = sdl_init(screen_width, screen_height, fullscreen, debug_mode);
+    data.render_data = sdl_init(screen_width, screen_height);
     data.data_structure = data_structure;
 
     if (data_structure == GRID)
@@ -143,6 +128,9 @@ int event_loop(void *data)
             case 'c':
                 add_pattern(RPENTOMINO_SPAM, app_data->grid, 0, 0);
                 break;
+            case 'd':
+                app_data->render_data->debug_mode = !app_data->render_data->debug_mode;
+                break;
             case SDLK_UP:
                 app_data->render_data->camera->y -= 10;
                 break;
@@ -210,6 +198,7 @@ int update_loop(void *data)
         }
         else
         {
+            // SDL_Delay(100);
             tree_step(app_data->tree);
         }
 

@@ -86,6 +86,29 @@ void data_texture_update_quad(uint16_t *pixels, RenderData *render_data, QuadTre
 {
     if (camera_quad_overlap_check(render_data->camera, quad))
     {
+        if (render_data->debug_mode)
+        {
+            int color = 16 - quad->level;
+
+            int min_x = quad->x * 6 - render_data->camera->x;
+            min_x = min_x < 0 ? 0 : min_x;
+
+            int max_x = (quad->x + pow(2, quad->level)) * 6 - render_data->camera->x;
+            max_x = max_x > render_data->camera->width ? render_data->camera->width : max_x;
+
+            int min_y = quad->y * 6 - render_data->camera->y;
+            min_y = min_y < 0 ? 0 : min_y;
+
+            int max_y = (quad->y + pow(2, quad->level)) * 6 - render_data->camera->y;
+            max_y = max_y > render_data->camera->height ? render_data->camera->height : max_y;
+
+            int width = (max_x - min_x) * 2;
+            for (int y = min_y; y < max_y; y++)
+            {
+                memset(&pixels[min_x + y * render_data->camera->width], color, width);
+            }
+        }
+
         for (int i = 0; i < 4; i++)
         {
             if (quad->sub_quads[i] != NULL)
@@ -112,13 +135,13 @@ void data_texture_update_leaf(uint16_t *pixels, RenderData *render_data, QuadTre
         min_block_x = min_block_x < 1 ? 1 : min_block_x;
 
         int max_block_x = render_data->camera->x + render_data->camera->width - leaf->x * 6 + 1;
-        max_block_x = max_block_x >= 7 ? 7 : max_block_x;
+        max_block_x = max_block_x > 7 ? 7 : max_block_x;
 
         int min_block_y = render_data->camera->y - leaf->y * 6 + 1;
         min_block_y = min_block_y < 1 ? 1 : min_block_y;
 
         int max_block_y = render_data->camera->y + render_data->camera->height - leaf->y * 6 + 1;
-        max_block_y = max_block_y >= 7 ? 7 : max_block_y;
+        max_block_y = max_block_y > 7 ? 7 : max_block_y;
 
         for (int block_x = min_block_x; block_x < max_block_x; block_x++)
         {
@@ -133,7 +156,7 @@ void data_texture_update_leaf(uint16_t *pixels, RenderData *render_data, QuadTre
                 uint32_t pos = leaf->x * 6 + block_x - 1 - render_data->camera->x + (leaf->y * 6 + block_y - 1 - render_data->camera->y) * render_data->camera->width;
                 if (render_data->debug_mode)
                 {
-                    pixels[pos] = state ? 61455 : 255;
+                    pixels[pos] = state ? 61455 : 3855;
                 }
                 else
                 {

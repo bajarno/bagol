@@ -7,7 +7,7 @@
 TTF_Font *courier_new_font;
 SDL_Color white_color = {255, 255, 255};
 
-RenderData *sdl_init(int width, int height, int fullscreen, int debug_mode)
+RenderData *sdl_init(int width, int height)
 {
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
@@ -28,14 +28,14 @@ RenderData *sdl_init(int width, int height, int fullscreen, int debug_mode)
 
     RenderData *render_data = malloc(sizeof(RenderData));
 
-    render_data->window = sdl_create_window(width, height, fullscreen);
+    render_data->window = sdl_create_window(width, height);
     render_data->window_width = width;
     render_data->window_height = height;
 
     render_data->renderer = sdl_create_renderer(render_data->window);
     render_data->data_texture = data_texture_init(render_data->renderer, width, height);
 
-    render_data->debug_mode = debug_mode;
+    render_data->debug_mode = 0;
 
     SDL_Rect debug_rect;
     render_data->debug_rect = &debug_rect;
@@ -52,7 +52,7 @@ RenderData *sdl_init(int width, int height, int fullscreen, int debug_mode)
     return render_data;
 }
 
-SDL_Window *sdl_create_window(int width, int height, int fullscreen)
+SDL_Window *sdl_create_window(int width, int height)
 {
     SDL_Window *window = SDL_CreateWindow(
         "hello_sdl2",
@@ -64,12 +64,6 @@ SDL_Window *sdl_create_window(int width, int height, int fullscreen)
     {
         fprintf(stderr, "could not create window: %s\n", SDL_GetError());
         SDL_Quit();
-    }
-
-    if (fullscreen)
-    {
-        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-        SDL_SetWindowSize(window, 2560, 1440);
     }
 
     return window;

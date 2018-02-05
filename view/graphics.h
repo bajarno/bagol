@@ -17,8 +17,8 @@ typedef struct RenderData
     SDL_SpinLock write_lock;
 } RenderData;
 
-RenderData *sdl_init(int, int, int, int);
-SDL_Window *sdl_create_window(int, int, int);
+RenderData *sdl_init(int, int);
+SDL_Window *sdl_create_window(int, int);
 SDL_Renderer *sdl_create_renderer(SDL_Window *);
 void sdl_create_debug_texture(char *, SDL_Renderer *, SDL_Texture *, SDL_Rect *);
 void render(RenderData *);
