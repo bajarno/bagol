@@ -1,8 +1,9 @@
-#include "leaf.c"
 
 #include "quad.h"
 
-Quad *quad_init(uint32_t x, uint32_t y, uint8_t level)
+#include "leaf.c"
+
+Quad *quad_init(uint32_t x, uint32_t y, uint8_t level, Quad *parent)
 {
     Quad *quad = malloc(sizeof(Quad));
 
@@ -13,6 +14,9 @@ Quad *quad_init(uint32_t x, uint32_t y, uint8_t level)
 
     // Allocate memory for pointers to sublayer
     quad->sub_quads = calloc(4, sizeof(*quad->sub_quads));
+
+    quad->parent = parent;
+
     return quad;
 }
 

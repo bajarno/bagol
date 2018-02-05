@@ -2,7 +2,7 @@
 
 #include "leaf.h"
 
-Leaf *leaf_init(uint32_t x, uint32_t y)
+Leaf *leaf_init(uint32_t x, uint32_t y, Quad *parent)
 {
     Leaf *leaf = malloc(sizeof(Leaf));
 
@@ -11,6 +11,7 @@ Leaf *leaf_init(uint32_t x, uint32_t y)
 
     leaf->data = calloc(2, sizeof(*leaf->data));
 
+    leaf->parent = parent;
     return leaf;
 }
 
@@ -28,4 +29,9 @@ void leaf_mask(Leaf *leaf, int gen, Block mask, Block data)
 {
     leaf->data[gen] &= mask;
     leaf->data[gen] |= data;
+}
+
+int leaf_global_to_local_pos(Leaf *leaf)
+{
+    return global_to_local_pos(leaf->x, leaf->y, 0);
 }
