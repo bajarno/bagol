@@ -25,7 +25,8 @@ typedef enum Algorithm {
 } Algorithm;
 
 // Struct representing grid data.
-typedef struct Grid {
+typedef struct Grid
+{
     int width;
     int height;
 
@@ -37,19 +38,19 @@ typedef struct Grid {
     Algorithm algorithm;
 
     // Represents the generation, 1 = alive, 0 = death.
-    uint8_t ** data;
-    uint8_t ** data_prev;
+    uint8_t **data;
+    uint8_t **data_prev;
 
     // SpinLock for reading and writing to data, used for blocking access by other threads.
     SDL_SpinLock write_lock;
     SDL_SpinLock read_lock;
 } Grid;
 
-Grid grid_init(int , int, int, Algorithm);
-void free_grid_memory(Grid*);
-void grid_step(Grid*);
-void grid_step_basic(Grid*);
-void grid_step_basic_diff(Grid*);
-uint8_t get_next_state_basic(uint8_t**, int, int);
-void grid_step_neighbours(Grid*);
-void grid_clear(Grid*);
+Grid grid_init(int, int, int, Algorithm);
+void free_grid_memory(Grid *);
+void grid_step(Grid *);
+void grid_step_basic(Grid *);
+void grid_step_basic_diff(Grid *);
+uint8_t get_next_state_basic(uint8_t **, int, int);
+void grid_step_neighbours(Grid *);
+void grid_clear(Grid *);

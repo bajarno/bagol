@@ -12,7 +12,7 @@
 
 #include "main.h"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     // Settings
     int screen_width = 1200;
@@ -25,10 +25,14 @@ int main(int argc, char** argv)
     int debug_mode = 0;
     int data_structure = QUADTREE;
 
-    for (int i = 0; i < argc; i++) {
-        if (strcmp(argv[i], "-f") == 0) {
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-f") == 0)
+        {
             fullscreen = 1;
-        } else if (strcmp(argv[i], "-d") == 0) {
+        }
+        else if (strcmp(argv[i], "-d") == 0)
+        {
             debug_mode = 1;
         }
     }
@@ -40,13 +44,16 @@ int main(int argc, char** argv)
     data.render_data = sdl_init(screen_width, screen_height, fullscreen, debug_mode);
     data.data_structure = data_structure;
 
-    if (data_structure == GRID) {
+    if (data_structure == GRID)
+    {
         // Grid
         Grid grid = grid_init(grid_width, grid_height, 1, NEIGHBOURS_DIFF);
         data.grid = &grid;
-    } else {
+    }
+    else
+    {
         data.tree = tree_init();
-        Leaf * leaf = tree_get_leaf(data.tree, INITIAL_QUAD_POSITION, INITIAL_QUAD_POSITION);
+        Leaf *leaf = tree_get_leaf(data.tree, INITIAL_QUAD_POSITION, INITIAL_QUAD_POSITION);
         leaf->data[data.tree->current_gen] = 8848035282944;
     }
 
@@ -56,10 +63,10 @@ int main(int argc, char** argv)
     data.quit = 0;
 
     // Draw loop, run in separate thread.
-    SDL_Thread* draw_thread = SDL_CreateThread(draw_loop, "DrawThread", &data);
+    SDL_Thread *draw_thread = SDL_CreateThread(draw_loop, "DrawThread", &data);
 
     // Update loop, run in separate thread.
-    SDL_Thread* update_thread = SDL_CreateThread(update_loop, "UpdateThread", &data);
+    SDL_Thread *update_thread = SDL_CreateThread(update_loop, "UpdateThread", &data);
 
     // Event loop, run in main thread.
     event_loop(&data);
@@ -72,26 +79,31 @@ int main(int argc, char** argv)
     return 0;
 }
 
-int draw_loop(void *data) {
-    AppData* app_data = (AppData*)(data);
+int draw_loop(void *data)
+{
+    AppData *app_data = (AppData *)(data);
 
     Uint32 previous_ticks = 0;
     float frametime = 60;
-    while (!app_data->quit) {
+    while (!app_data->quit)
+    {
         // Calculate fps
         Uint32 ticks = SDL_GetTicks();
         Uint32 delta_ticks = ticks - previous_ticks;
         previous_ticks = ticks;
 
         // Calculate frametime by actual frametime and previous frametime for smoothing
-        float smooth_factor = 0.1; 
+        float smooth_factor = 0.1;
         frametime = smooth_factor * delta_ticks + (1.0 - smooth_factor) * frametime;
         app_data->fps = 1000.0 / frametime;
 
         // Update texture
-        if (app_data->data_structure == GRID) {
+        if (app_data->data_structure == GRID)
+        {
             update_data_texture_grid(app_data->render_data, app_data->grid);
-        } else {
+        }
+        else
+        {
             update_data_texture_tree(app_data->render_data, app_data->tree);
         }
 
@@ -106,23 +118,35 @@ int draw_loop(void *data) {
     return 0;
 }
 
-int event_loop(void *data) {
-    AppData* app_data = (AppData*)(data);
+int event_loop(void *data)
+{
+    AppData *app_data = (AppData *)(data);
 
     // Event loop
     SDL_Event event;
-    while (SDL_WaitEvent(&event) && !app_data->quit) {
-        if (event.type == SDL_QUIT) {
+    while (SDL_WaitEvent(&event) && !app_data->quit)
+    {
+        if (event.type == SDL_QUIT)
+        {
             app_data->quit = 1;
-        } else if (event.type == SDL_KEYDOWN) {
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
+        }
+        else if (event.type == SDL_KEYDOWN)
+        {
+            if (event.key.keysym.sym == SDLK_ESCAPE)
+            {
                 app_data->quit = 1;
-            } else if (event.key.keysym.sym == SDLK_SPACE) {
+            }
+            else if (event.key.keysym.sym == SDLK_SPACE)
+            {
                 grid_clear(app_data->grid);
-            } else if (event.key.keysym.sym == 'c') {
+            }
+            else if (event.key.keysym.sym == 'c')
+            {
                 add_pattern(RPENTOMINO_SPAM, app_data->grid, 0, 0);
             }
-        } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+        }
+        else if (event.type == SDL_MOUSEBUTTONDOWN)
+        {
             int width;
             int height;
             SDL_GetWindowSize(app_data->render_data->window, &width, &height);
@@ -136,17 +160,22 @@ int event_loop(void *data) {
     return 0;
 }
 
-int update_loop(void *data) {
-    AppData* app_data = (AppData*)(data);
+int update_loop(void *data)
+{
+    AppData *app_data = (AppData *)(data);
 
     Uint32 previous_ticks = 0;
     float updatetime = 60;
-    while (!app_data->quit) {
-        if (app_data->data_structure == GRID) {
+    while (!app_data->quit)
+    {
+        if (app_data->data_structure == GRID)
+        {
             // Generate new generation
             grid_step(app_data->grid);
             app_data->grid->gen_count++;
-        } else {
+        }
+        else
+        {
             SDL_Delay(100);
             tree_step(app_data->tree);
         }
@@ -157,7 +186,7 @@ int update_loop(void *data) {
         previous_ticks = ticks;
 
         // Calculate updatetime by actual updatetime and previous updatetime for smoothing
-        float smooth_factor = 0.01; 
+        float smooth_factor = 0.01;
         updatetime = smooth_factor * delta_ticks + (1.0 - smooth_factor) * updatetime;
         app_data->ups = 1000.0 / updatetime;
     }

@@ -1,12 +1,15 @@
 #include "block.h"
 
 // Calculate new state, returns byte indicating changes in edges of neighbouring blocks.
-Block block_step(Block data) {
+Block block_step(Block data)
+{
     Block new_data = data;
 
     // Loop only over center bits
-    for (int x = 1; x < 7; x++) {
-        for (int y = 1; y < 7; y++) {
+    for (int x = 1; x < 7; x++)
+    {
+        for (int y = 1; y < 7; y++)
+        {
             uint8_t pos = x + y * 8;
 
             // Create mask to set everything other than neighbouring cells to 0.
@@ -18,7 +21,8 @@ Block block_step(Block data) {
             int living = __builtin_popcountll(masked_neighbours);
 
             // If living is equal to 2, nothing has to change.
-            if (living != 2) {
+            if (living != 2)
+            {
                 // Calculate values for masking and unmasking current bit.
                 Block bit_mask = 1;
                 bit_mask <<= pos;
@@ -28,7 +32,8 @@ Block block_step(Block data) {
                 new_data &= bit_unmask;
 
                 // If exactly three neighbours are alive, set bit to 1 (alive).
-                if (living == 3) {
+                if (living == 3)
+                {
                     new_data |= bit_mask;
                 }
             }
@@ -39,12 +44,15 @@ Block block_step(Block data) {
 }
 
 // Print a block to console in bit form.
-void block_print_bits(Block data) {
+void block_print_bits(Block data)
+{
     Block mask = 1;
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < 64; i++)
+    {
         printf("%d", (data & mask) > 0);
 
-        if ((i + 1) % 8 == 0) {
+        if ((i + 1) % 8 == 0)
+        {
             printf("\n");
         }
 

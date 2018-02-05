@@ -2,8 +2,9 @@
 
 #include "quad.h"
 
-Quad * quad_init(uint32_t x, uint32_t y, uint8_t level) {
-    Quad * quad = malloc(sizeof(Quad));
+Quad *quad_init(uint32_t x, uint32_t y, uint8_t level)
+{
+    Quad *quad = malloc(sizeof(Quad));
 
     quad->level = level;
     quad->x = x;
@@ -15,11 +16,13 @@ Quad * quad_init(uint32_t x, uint32_t y, uint8_t level) {
     return quad;
 }
 
-int quad_global_to_local_pos(Quad * quad) {
+int quad_global_to_local_pos(Quad *quad)
+{
     return global_to_local_pos(quad->x, quad->y, quad->level);
 }
 
-int global_to_local_pos(uint32_t x, uint32_t y, uint8_t level) {
+int global_to_local_pos(uint32_t x, uint32_t y, uint8_t level)
+{
     uint32_t position_mask = 1 << level;
 
     int xdif = ((x & position_mask) > 0);
