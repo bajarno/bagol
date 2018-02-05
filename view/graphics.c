@@ -2,6 +2,8 @@
 
 #include "graphics.h"
 
+#include "data_texture.c"
+
 TTF_Font *courier_new_font;
 SDL_Color white_color = {255, 255, 255};
 
@@ -27,8 +29,11 @@ RenderData *sdl_init(int width, int height, int fullscreen, int debug_mode)
     RenderData *render_data = malloc(sizeof(RenderData));
 
     render_data->window = sdl_create_window(width, height, fullscreen);
+    render_data->window_width = width;
+    render_data->window_height = height;
+
     render_data->renderer = sdl_create_renderer(render_data->window);
-    render_data->data_texture = sdl_create_data_texture(width, height, render_data->renderer, render_data->window);
+    render_data->data_texture = data_texture_init(render_data->renderer, width, height);
 
     render_data->debug_mode = debug_mode;
 
@@ -42,6 +47,8 @@ RenderData *sdl_init(int width, int height, int fullscreen, int debug_mode)
     camera_y = camera_y * 6 - height / 2; // Adjustments on separate line because of uint32_t to uint64_t conversion.
     render_data->camera = camera_init(camera_x, camera_y, width, height);
 
+    render_data->write_lock = 0;
+
     return render_data;
 }
 
@@ -51,7 +58,7 @@ SDL_Window *sdl_create_window(int width, int height, int fullscreen)
         "hello_sdl2",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         width, height,
-        SDL_WINDOW_SHOWN);
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
     if (window == NULL)
     {
@@ -82,127 +89,10 @@ SDL_Renderer *sdl_create_renderer(SDL_Window *window)
     return renderer;
 }
 
-SDL_Texture *sdl_create_data_texture(int width, int height, SDL_Renderer *renderer, SDL_Window *window)
-{
-    SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA4444, SDL_TEXTUREACCESS_STATIC, width, height);
-
-    if (texture == NULL)
-    {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        fprintf(stderr, "could not create texture: %s\n", SDL_GetError());
-        SDL_Quit();
-    }
-
-    return texture;
-}
-
-void update_data_texture_grid(RenderData *render_data, Grid *grid)
-{
-    int width;
-    int height;
-
-    SDL_QueryTexture(render_data->data_texture, NULL, NULL, &width, &height);
-
-    int size = width * height;
-    uint16_t *pixels = malloc(size * sizeof(*pixels));
-
-    SDL_AtomicLock(&grid->read_lock);
-    for (int i = 0; i < grid->width * grid->height; i++)
-    {
-        if (render_data->debug_mode)
-        {
-            // Show colors indicating which cells are being checked
-            uint16_t state = (grid->data[i % grid->width + 1][i / grid->width + 1] & STATEMASK) / STATEMASK;
-            uint16_t check = (grid->data[i % grid->width + 1][i / grid->width + 1] & CHECKMASK) / CHECKMASK;
-            uint16_t color = state * 61455 + check * 255;
-            pixels[i] = color;
-        }
-        else
-        {
-            // Show plain live-death state.
-            pixels[i] = (grid->data[i % grid->width + 1][i / grid->width + 1] & STATEMASK) ? 61167 : 4383;
-        }
-    }
-    SDL_AtomicUnlock(&grid->read_lock);
-
-    SDL_UpdateTexture(render_data->data_texture, NULL, pixels, width * sizeof(uint16_t));
-
-    free(pixels);
-}
-
-void update_data_texture_tree(RenderData *render_data, QuadTree *tree)
-{
-    int width;
-    int height;
-
-    SDL_QueryTexture(render_data->data_texture, NULL, NULL, &width, &height);
-
-    int size = width * height;
-    uint16_t *pixels = calloc(size, sizeof(*pixels));
-
-    SDL_AtomicLock(&tree->read_lock);
-
-    update_data_texture_quad(pixels, render_data, tree, tree->parent_quad);
-
-    SDL_AtomicUnlock(&tree->read_lock);
-
-    SDL_UpdateTexture(render_data->data_texture, NULL, pixels, width * sizeof(uint16_t));
-
-    free(pixels);
-}
-
-void update_data_texture_quad(uint16_t *pixels, RenderData *render_data, QuadTree *tree, Quad *quad)
-{
-    if (camera_quad_overlap_check(render_data->camera, quad))
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            if (quad->sub_quads[i] != NULL)
-            {
-                if (quad->level > 1)
-                {
-                    update_data_texture_quad(pixels, render_data, tree, quad->sub_quads[i]);
-                }
-                else
-                {
-                    update_data_texture_leaf(pixels, render_data, tree, quad->sub_quads[i]);
-                }
-            }
-        }
-    }
-}
-
-void update_data_texture_leaf(uint16_t *pixels, RenderData *render_data, QuadTree *tree, Leaf *leaf)
-{
-    if (camera_leaf_overlap_check(render_data->camera, leaf))
-    {
-        for (int block_x = 1; block_x < 7; block_x++)
-        {
-            for (int block_y = 1; block_y < 7; block_y++)
-            {
-                Block mask = 1;
-                mask <<= (block_y * 8 + block_x);
-
-                Block data = leaf->data[tree->current_gen];
-
-                int state = (data & mask) > 0;
-                int pos = leaf->x * 6 + block_x - 1 - render_data->camera->x + (leaf->y * 6 + block_y - 1 - render_data->camera->y) * render_data->camera->width;
-                if (render_data->debug_mode)
-                {
-                    pixels[pos] = state ? 61455 : 255;
-                }
-                else
-                {
-                    pixels[pos] = state ? 61167 : 4383;
-                }
-            }
-        }
-    }
-}
-
 void update_debug_texture(char *text, RenderData *render_data)
 {
+    SDL_AtomicLock(&render_data->write_lock);
+
     SDL_DestroyTexture(render_data->debug_texture);
 
     SDL_Surface *surface = TTF_RenderText_Solid(courier_new_font, text, white_color);
@@ -217,14 +107,20 @@ void update_debug_texture(char *text, RenderData *render_data)
     render_data->debug_rect->y = 0;
 
     SDL_FreeSurface(surface);
+
+    SDL_AtomicUnlock(&render_data->write_lock);
 }
 
 void render(RenderData *render_data)
 {
+    SDL_AtomicLock(&render_data->write_lock);
+
     SDL_RenderClear(render_data->renderer);
     SDL_RenderCopy(render_data->renderer, render_data->data_texture, NULL, NULL);
     SDL_RenderCopy(render_data->renderer, render_data->debug_texture, NULL, render_data->debug_rect);
     SDL_RenderPresent(render_data->renderer);
+
+    SDL_AtomicUnlock(&render_data->write_lock);
 }
 
 void sdl_quit(RenderData *render_data)

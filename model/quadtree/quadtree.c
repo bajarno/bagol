@@ -25,7 +25,6 @@ void tree_step(QuadTree *tree)
 
     SDL_AtomicLock(&tree->read_lock);
     tree->current_gen = !tree->current_gen;
-    printf("Step\n");
     SDL_AtomicUnlock(&tree->read_lock);
 
     SDL_AtomicUnlock(&tree->write_lock);
@@ -156,15 +155,15 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
     // Check if position is below the current parent quad, if not, expand tree at top.
     while ((parent_quad->x & position_mask) != (x & position_mask) || (parent_quad->y & position_mask) != (y & position_mask))
     {
-        printf("Create parent quad\n");
+        parent_level += 1;
+        position_mask = UINT32_MAX << parent_level;
+
         int old_parent_position = quad_global_to_local_pos(parent_quad);
 
-        Quad *new_parent_quad = quad_init(parent_quad->x, parent_quad->y, parent_level + 1);
+        Quad *new_parent_quad = quad_init(parent_quad->x & position_mask, parent_quad->y & position_mask, parent_level);
         new_parent_quad->sub_quads[old_parent_position] = parent_quad;
 
         parent_quad = new_parent_quad;
-        parent_level += 1;
-        position_mask = UINT32_MAX << parent_level;
 
         tree->parent_quad = parent_quad;
     }
@@ -175,14 +174,14 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
     while (level > 1)
     {
         level -= 1;
+        position_mask = UINT32_MAX << level;
 
         int position = global_to_local_pos(x, y, level);
 
         // If the sub quad does not exist, create it
         if (quad->sub_quads[position] == NULL)
         {
-            printf("Create child quad\n");
-            quad->sub_quads[position] = quad_init(x, y, level);
+            quad->sub_quads[position] = quad_init(x & position_mask, y & position_mask, level);
         }
 
         quad = quad->sub_quads[position];
@@ -192,7 +191,6 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
 
     if (quad->sub_quads[position] == NULL)
     {
-        printf("Create leaf\n");
         quad->sub_quads[position] = leaf_init(x, y);
     }
 

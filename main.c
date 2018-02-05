@@ -100,11 +100,11 @@ int draw_loop(void *data)
         // Update texture
         if (app_data->data_structure == GRID)
         {
-            update_data_texture_grid(app_data->render_data, app_data->grid);
+            data_texture_update_grid(app_data->render_data, app_data->grid);
         }
         else
         {
-            update_data_texture_tree(app_data->render_data, app_data->tree);
+            data_texture_update_tree(app_data->render_data, app_data->tree);
         }
 
         char debug_text_format[] = "FPS: %.1f UPS: %.1f Gen: %d";
@@ -171,9 +171,23 @@ int event_loop(void *data)
         {
             if (event.motion.state & SDL_BUTTON_LMASK)
             {
-                app_data->render_data->camera->x -= event.motion.xrel;
-                app_data->render_data->camera->y -= event.motion.yrel;
+                float scale = app_data->render_data->camera->width / (float)app_data->render_data->window_width;
+                app_data->render_data->camera->x -= (int)floor(event.motion.xrel * scale + 0.5);
+                app_data->render_data->camera->y -= (int)floor(event.motion.yrel * scale + 0.5);
             }
+        }
+        else if (event.type == SDL_MOUSEWHEEL)
+        {
+            float zoom = 1 - event.wheel.y * 0.1;
+            uint64_t width = app_data->render_data->camera->width * zoom;
+            uint64_t height = app_data->render_data->camera->height * zoom;
+            data_texture_resize(app_data->render_data, width, height);
+        }
+        else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+        {
+            app_data->render_data->window_width = event.window.data1;
+            app_data->render_data->window_width = event.window.data2;
+            data_texture_resize(app_data->render_data, event.window.data1, event.window.data2);
         }
     }
 
