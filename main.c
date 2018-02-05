@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 
     // Parse arguments
     int fullscreen = 0;
-    int debug_mode = 0;
+    int debug_mode = 1;
     int data_structure = QUADTREE;
 
     for (int i = 0; i < argc; i++)
@@ -132,20 +132,32 @@ int event_loop(void *data)
         }
         else if (event.type == SDL_KEYDOWN)
         {
-            if (event.key.keysym.sym == SDLK_ESCAPE)
+            switch (event.key.keysym.sym)
             {
+            case SDLK_ESCAPE:
                 app_data->quit = 1;
-            }
-            else if (event.key.keysym.sym == SDLK_SPACE)
-            {
+                break;
+            case SDLK_SPACE:
                 grid_clear(app_data->grid);
-            }
-            else if (event.key.keysym.sym == 'c')
-            {
+                break;
+            case 'c':
                 add_pattern(RPENTOMINO_SPAM, app_data->grid, 0, 0);
+                break;
+            case SDLK_UP:
+                app_data->render_data->camera->y -= 10;
+                break;
+            case SDLK_RIGHT:
+                app_data->render_data->camera->x += 10;
+                break;
+            case SDLK_DOWN:
+                app_data->render_data->camera->y += 10;
+                break;
+            case SDLK_LEFT:
+                app_data->render_data->camera->x -= 10;
+                break;
             }
         }
-        else if (event.type == SDL_MOUSEBUTTONDOWN)
+        else if (event.type == SDL_MOUSEBUTTONDOWN && app_data->data_structure != QUADTREE)
         {
             int width;
             int height;
@@ -154,6 +166,14 @@ int event_loop(void *data)
             int x = event.button.x * app_data->grid->width / width;
             int y = event.button.y * app_data->grid->height / height;
             add_pattern(RPENTOMINO, app_data->grid, x, y);
+        }
+        else if (event.type == SDL_MOUSEMOTION)
+        {
+            if (event.motion.state & SDL_BUTTON_LMASK)
+            {
+                app_data->render_data->camera->x -= event.motion.xrel;
+                app_data->render_data->camera->y -= event.motion.yrel;
+            }
         }
     }
 
@@ -176,7 +196,6 @@ int update_loop(void *data)
         }
         else
         {
-            SDL_Delay(100);
             tree_step(app_data->tree);
         }
 

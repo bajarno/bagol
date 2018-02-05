@@ -1,3 +1,5 @@
+#include "camera.c"
+
 #include "graphics.h"
 
 TTF_Font *courier_new_font;
@@ -33,6 +35,12 @@ RenderData *sdl_init(int width, int height, int fullscreen, int debug_mode)
     SDL_Rect debug_rect;
     render_data->debug_rect = &debug_rect;
     render_data->debug_texture = SDL_CreateTexture(render_data->renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_STATIC, 0, 0);
+
+    uint64_t camera_x = INITIAL_QUAD_POSITION;
+    camera_x = camera_x * 6 - width / 2; // Adustments on separate line because of uint32_t to uint64_t conversion.
+    uint64_t camera_y = INITIAL_QUAD_POSITION;
+    camera_y = camera_y * 6 - height / 2; // Adjustments on separate line because of uint32_t to uint64_t conversion.
+    render_data->camera = camera_init(camera_x, camera_y, width, height);
 
     return render_data;
 }
@@ -133,15 +141,9 @@ void update_data_texture_tree(RenderData *render_data, QuadTree *tree)
     int size = width * height;
     uint16_t *pixels = calloc(size, sizeof(*pixels));
 
-    uint32_t min_x = INITIAL_QUAD_POSITION - (width / 2) / 6;
-    uint32_t max_x = INITIAL_QUAD_POSITION + (width / 2 - 1) / 6;
-
-    uint32_t min_y = INITIAL_QUAD_POSITION - (height / 2) / 6;
-    uint32_t max_y = INITIAL_QUAD_POSITION + (height / 2 - 1) / 6;
-
     SDL_AtomicLock(&tree->read_lock);
 
-    update_data_texture_quad(pixels, render_data, tree, tree->parent_quad, min_x, max_x, min_y, max_y);
+    update_data_texture_quad(pixels, render_data, tree, tree->parent_quad);
 
     SDL_AtomicUnlock(&tree->read_lock);
 
@@ -150,36 +152,34 @@ void update_data_texture_tree(RenderData *render_data, QuadTree *tree)
     free(pixels);
 }
 
-void update_data_texture_quad(uint16_t *pixels, RenderData *render_data, QuadTree *tree, Quad *quad, uint32_t min_x, uint32_t max_x, uint32_t min_y, uint32_t max_y)
+void update_data_texture_quad(uint16_t *pixels, RenderData *render_data, QuadTree *tree, Quad *quad)
 {
-    for (int i = 0; i < 4; i++)
+    if (camera_quad_overlap_check(render_data->camera, quad))
     {
-        if (quad->sub_quads[i] != NULL)
+        for (int i = 0; i < 4; i++)
         {
-            if (quad->level > 1)
+            if (quad->sub_quads[i] != NULL)
             {
-                update_data_texture_quad(pixels, render_data, tree, quad->sub_quads[i], min_x, max_x, min_y, max_y);
-            }
-            else
-            {
-                update_data_texture_leaf(pixels, render_data, tree, quad->sub_quads[i], min_x, max_x, min_y, max_y);
+                if (quad->level > 1)
+                {
+                    update_data_texture_quad(pixels, render_data, tree, quad->sub_quads[i]);
+                }
+                else
+                {
+                    update_data_texture_leaf(pixels, render_data, tree, quad->sub_quads[i]);
+                }
             }
         }
     }
 }
 
-void update_data_texture_leaf(uint16_t *pixels, RenderData *render_data, QuadTree *tree, Leaf *leaf, uint32_t min_x, uint32_t max_x, uint32_t min_y, uint32_t max_y)
+void update_data_texture_leaf(uint16_t *pixels, RenderData *render_data, QuadTree *tree, Leaf *leaf)
 {
-    if (leaf->x > min_x && leaf->x < max_x && leaf->y > min_y && leaf->y < max_y)
+    if (camera_leaf_overlap_check(render_data->camera, leaf))
     {
-        uint32_t start_x = (leaf->x - min_x) * 6;
-        uint32_t start_y = (leaf->y - min_y) * 6;
-        uint32_t width = (max_x - min_x + 1) * 6;
-
-        Block mask = 1;
-        for (int block_y = 1; block_y < 7; block_y++)
+        for (int block_x = 1; block_x < 7; block_x++)
         {
-            for (int block_x = 1; block_x < 7; block_x++)
+            for (int block_y = 1; block_y < 7; block_y++)
             {
                 Block mask = 1;
                 mask <<= (block_y * 8 + block_x);
@@ -187,7 +187,7 @@ void update_data_texture_leaf(uint16_t *pixels, RenderData *render_data, QuadTre
                 Block data = leaf->data[tree->current_gen];
 
                 int state = (data & mask) > 0;
-                int pos = start_x + block_x + (start_y + block_y) * width;
+                int pos = leaf->x * 6 + block_x - 1 - render_data->camera->x + (leaf->y * 6 + block_y - 1 - render_data->camera->y) * render_data->camera->width;
                 if (render_data->debug_mode)
                 {
                     pixels[pos] = state ? 61455 : 255;
