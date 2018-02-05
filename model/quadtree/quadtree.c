@@ -9,12 +9,24 @@ QuadTree * tree_init() {
 
     tree->parent_quad = quad_init(INITIAL_QUAD_POSITION, INITIAL_QUAD_POSITION, 1);
 
+    // Set lock values to 0 (unlocked)
+    tree->write_lock = 0;
+    tree->read_lock = 0;
+
     return tree;
 }
 
 void tree_step(QuadTree * tree) {
+    SDL_AtomicLock(&tree->write_lock);
+
     tree_step_quad(tree, tree->parent_quad);
+
+    SDL_AtomicLock(&tree->read_lock);
     tree->current_gen = !tree->current_gen;
+    printf("Step\n");
+    SDL_AtomicUnlock(&tree->read_lock);
+
+    SDL_AtomicUnlock(&tree->write_lock);
 }
 
 void tree_step_quad(QuadTree * tree, Quad * quad) {

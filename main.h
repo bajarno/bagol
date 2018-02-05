@@ -1,12 +1,16 @@
+typedef enum DataStructure {
+    GRID,
+    QUADTREE
+} DataStructure;
+
 // Struct representing draw data.
 typedef struct AppData {
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    SDL_Texture* grid_texture;
+    DataStructure data_structure;
 
-    SDL_Rect* debug_rect;
-    SDL_Texture* debug_texture;
     Grid* grid;
+    QuadTree* tree;
+
+    RenderData* render_data;
 
     float fps;
     float ups;
@@ -14,6 +18,7 @@ typedef struct AppData {
     short quit;
 } AppData;
 
+int main(int, char**);
 int draw_loop(void*);
 int event_loop(void*);
 int update_loop(void*);

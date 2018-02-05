@@ -5,46 +5,31 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+#include "model/quadtree/quadtree.c"
 #include "model/grid.c"
-#include "main.h"
-#include "view/graphics.c"
 #include "model/pattern.c"
-#include "model/quadtree/quad.c"
+#include "view/graphics.c"
+
+#include "main.h"
 
 int main(int argc, char** argv)
 {
-    // int current_gen = 0;
-    // Quad* quad = quad_init();
-
-
-
-    // Leaf* leaf = quad_get_leaf(quad, 2, 2);
-
-    // leaf->data[current_gen] = 4512636238561280;
-
-    // for (int i = 0; i < 1000; i++) {
-    //     quad_print_bits(quad, current_gen);
-    //     printf("\n\n");
-    //     getchar();
-    //     quad_step(quad, current_gen);
-
-    //     current_gen = !current_gen;
-    // }
-
-    // return 0;
-
     // Settings
-    int screen_width = 1280;
-    int screen_height = 720;
+    int screen_width = 1200;
+    int screen_height = 1200;
     int grid_width = screen_width;
     int grid_height = screen_height;
 
     // Parse arguments
-    char fullscreen = 0;
+    int fullscreen = 0;
+    int debug_mode = 0;
+    int data_structure = QUADTREE;
 
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "-f") == 0) {
             fullscreen = 1;
+        } else if (strcmp(argv[i], "-d") == 0) {
+            debug_mode = 1;
         }
     }
 
@@ -52,17 +37,19 @@ int main(int argc, char** argv)
     AppData data;
 
     // Graphics
-    sdl_init();
-    data.window = sdl_create_window(screen_width, screen_height, fullscreen);
-    data.renderer = sdl_create_renderer(data.window);
-    data.grid_texture = sdl_create_grid_texture(grid_width, grid_height, data.renderer, data.window);
-    SDL_Rect debug_rect;
-    data.debug_rect = &debug_rect;
-    data.debug_texture = SDL_CreateTexture(data.renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_STATIC, 0, 0);
+    data.render_data = sdl_init(screen_width, screen_height, fullscreen, debug_mode);
+    data.data_structure = data_structure;
 
-    // Grid
-    Grid grid = grid_init(grid_width, grid_height, 1, NEIGHBOURS_DIFF);
-    data.grid = &grid;
+    if (data_structure == GRID) {
+        // Grid
+        Grid grid = grid_init(grid_width, grid_height, 1, NEIGHBOURS_DIFF);
+        data.grid = &grid;
+    } else {
+        data.tree = tree_init();
+        Leaf * leaf = tree_get_leaf(data.tree, INITIAL_QUAD_POSITION, INITIAL_QUAD_POSITION);
+        leaf->data[data.tree->current_gen] = 8848035282944;
+    }
+
     // Initial values
     data.fps = 0;
     data.ups = 0;
@@ -80,7 +67,7 @@ int main(int argc, char** argv)
     // Quit
     SDL_WaitThread(draw_thread, NULL);
     SDL_WaitThread(update_thread, NULL);
-    sdl_quit(&data);
+    sdl_quit(data.render_data);
 
     return 0;
 }
@@ -102,14 +89,18 @@ int draw_loop(void *data) {
         app_data->fps = 1000.0 / frametime;
 
         // Update texture
-        update_grid_texture(app_data->grid_texture, app_data->grid);
+        if (app_data->data_structure == GRID) {
+            update_data_texture_grid(app_data->render_data, app_data->grid);
+        } else {
+            update_data_texture_tree(app_data->render_data, app_data->tree);
+        }
 
         char debug_text_format[] = "FPS: %.1f UPS: %.1f Gen: %d";
         char debug_text[1000];
         sprintf(debug_text, debug_text_format, app_data->fps, app_data->ups, app_data->grid->gen_count);
-        update_debug_texture(debug_text, app_data);
+        update_debug_texture(debug_text, app_data->render_data);
 
-        render(app_data);
+        render(app_data->render_data);
     }
 
     return 0;
@@ -134,7 +125,7 @@ int event_loop(void *data) {
         } else if (event.type == SDL_MOUSEBUTTONDOWN) {
             int width;
             int height;
-            SDL_GetWindowSize(app_data->window, &width, &height);
+            SDL_GetWindowSize(app_data->render_data->window, &width, &height);
 
             int x = event.button.x * app_data->grid->width / width;
             int y = event.button.y * app_data->grid->height / height;
@@ -151,9 +142,14 @@ int update_loop(void *data) {
     Uint32 previous_ticks = 0;
     float updatetime = 60;
     while (!app_data->quit) {
-        // Generate new generation
-        grid_step(app_data->grid);
-        app_data->grid->gen_count++;
+        if (app_data->data_structure == GRID) {
+            // Generate new generation
+            grid_step(app_data->grid);
+            app_data->grid->gen_count++;
+        } else {
+            SDL_Delay(100);
+            tree_step(app_data->tree);
+        }
 
         // Calculate ups
         Uint32 ticks = SDL_GetTicks();

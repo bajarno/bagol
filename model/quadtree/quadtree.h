@@ -8,6 +8,10 @@ typedef struct QuadTree {
 
     // Current parent quad i.e. top of the tree.
     Quad * parent_quad;
+
+    // SpinLock for reading and writing to data, used for blocking access by other threads.
+    SDL_SpinLock write_lock;
+    SDL_SpinLock read_lock;
 } QuadTree;
 
 QuadTree * tree_init();

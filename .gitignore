@@ -1,3 +1,6 @@
+# Visual studio code settings
+.vscode/settings.json
+
 # Prerequisites
 *.d
 
