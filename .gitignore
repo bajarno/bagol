@@ -1,6 +1,9 @@
 # Visual studio code settings
 .vscode/settings.json
 
+# Output
+bagol
+
 # Prerequisites
 *.d
 
