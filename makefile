@@ -12,7 +12,12 @@ CC = gcc
 COMPILER_FLAGS = -g
 
 #LINKER_FLAGS specifies the libraries we're linking against
-LINKER_FLAGS = -lSDL2 -lSDL2_ttf -lm
+ifeq ($(OS), Linux)
+	LINKER_FLAGS = -lSDL2 -lSDL2_ttf -lm
+endif
+ifeq ($(OS), Darwin) # Mac os
+	LINKER_FLAGS = -framework SDL2 -framework SDL2_ttf
+endif
 
 #INCLUDE_FLAGS specifies the directories of header files that should be included
 ifeq ($(OS), Linux)
