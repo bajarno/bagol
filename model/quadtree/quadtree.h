@@ -1,4 +1,7 @@
 // Position of the first quad upon creation of a new tree. Equal for x and y.
+// Is equal to binary value 10101010101010101010101010101010. Expanding from
+// this initial position will result in the minimal amount of layers needing to
+// be added.
 uint32_t INITIAL_QUAD_POSITION = 2863311530;
 
 // Represents a quadtree.
@@ -15,10 +18,17 @@ typedef struct QuadTree
     SDL_SpinLock read_lock;
 } QuadTree;
 
+// Initializes a new quadtree instance.
 QuadTree *tree_init();
+
+// Retrieves the leaf of the given quadtree at the given position. If the leaf
+// does not exist, the tree is expanded and the leaf is added. Initial data for
+// a newly created leaf is 0 (All cells death).
 Leaf *tree_get_leaf(QuadTree *, uint32_t, uint32_t);
-void tree_step(QuadTree *);
-void tree_step_quad(QuadTree *, Quad *);
-void tree_step_leaf(QuadTree *, Leaf *);
+
+// Deletes the given leaf from its tree. After deleting the leaf, its parent
+// quad is also checked for deletion.
 void leaf_delete(Leaf *leaf);
+
+// Deletes the given quad from its tree if possible.
 void quad_delete(Quad *quad);

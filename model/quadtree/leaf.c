@@ -12,6 +12,7 @@ Leaf *leaf_init(uint32_t x, uint32_t y, Quad *parent)
     leaf->data = calloc(2, sizeof(*leaf->data));
 
     leaf->parent = parent;
+
     return leaf;
 }
 
@@ -21,8 +22,7 @@ void leaf_step(Leaf *leaf, int base_gen)
 
     Block new_data = block_step(leaf->data[base_gen]);
 
-    leaf->data[next_gen] &= (INTERNAL_MASK ^ -1);
-    leaf->data[next_gen] |= (INTERNAL_MASK & new_data);
+    leaf_mask(leaf, next_gen, INTERNAL_MASK ^ -1, INTERNAL_MASK & new_data);
 }
 
 void leaf_mask(Leaf *leaf, int gen, Block mask, Block data)

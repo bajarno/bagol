@@ -92,9 +92,9 @@ int draw_loop(void *data)
             data_texture_update_tree(app_data->render_data, app_data->tree);
         }
 
-        char debug_text_format[] = "FPS: %.1f UPS: %.1f Gen: %d";
-        char debug_text[1000];
-        sprintf(debug_text, debug_text_format, app_data->fps, app_data->ups, app_data->grid->gen_count);
+        char debug_text_format[] = "FPS: %.1f UPS: %.1f";
+        char debug_text[1000] = {};
+        snprintf(debug_text, 999, debug_text_format, app_data->fps, app_data->ups);
         update_debug_texture(debug_text, app_data->render_data);
 
         render(app_data->render_data);

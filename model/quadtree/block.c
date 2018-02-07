@@ -1,6 +1,5 @@
 #include "block.h"
 
-// Calculate new state, returns byte indicating changes in edges of neighbouring blocks.
 Block block_step(Block data)
 {
     Block new_data = data;
@@ -13,8 +12,7 @@ Block block_step(Block data)
             uint8_t pos = x + y * 8;
 
             // Create mask to set everything other than neighbouring cells to 0.
-            Block mask = NEIGHBOURS_MASK_POS_9;
-            mask <<= pos - 9;
+            Block mask = NEIGHBOURS_MASK_POS_9 << pos - 9;
             Block masked_neighbours = data & mask;
 
             // Use built in count to get amount of bits at 1 in masked block.
