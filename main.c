@@ -5,15 +5,30 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+#include <math.h>
+#include <string.h>
+#include <regex.h>
+
 #include "model/quadtree/quadtree.c"
 #include "model/grid.c"
-#include "model/pattern.c"
+#include "model/pattern/pattern.c"
 #include "view/graphics.c"
 
 #include "main.h"
 
 int main(int argc, char **argv)
 {
+    // Pattern *pattern = pattern_parse_rle("patterns/gosperglidergun.rle");
+    // for (int y = 0; y < pattern->height; y++)
+    // {
+    //     for (int x = 0; x < pattern->width; x++)
+    //     {
+    //         printf("%d", pattern->data[x][y]);
+    //     }
+    //     printf("\n");
+    // }
+    // return 0;
+
     // Settings
     int screen_width = 600;
     int screen_height = 600;
@@ -125,9 +140,6 @@ int event_loop(void *data)
             case SDLK_SPACE:
                 grid_clear(app_data->grid);
                 break;
-            case 'c':
-                add_pattern(RPENTOMINO_SPAM, app_data->grid, 0, 0);
-                break;
             case 'd':
                 app_data->render_data->debug_mode = !app_data->render_data->debug_mode;
                 break;
@@ -153,7 +165,7 @@ int event_loop(void *data)
 
             int x = event.button.x * app_data->grid->width / width;
             int y = event.button.y * app_data->grid->height / height;
-            add_pattern(RPENTOMINO, app_data->grid, x, y);
+            // add_pattern(RPENTOMINO, app_data->grid, x, y);
         }
         else if (event.type == SDL_MOUSEMOTION)
         {
@@ -198,7 +210,7 @@ int update_loop(void *data)
         }
         else
         {
-            // SDL_Delay(100);
+            SDL_Delay(50);
             tree_step(app_data->tree);
         }
 

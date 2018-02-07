@@ -1,7 +1,5 @@
 #include "camera.h"
 
-#include <math.h>
-
 // Allocate a new camera and return a pointer to it.
 Camera *camera_init(uint64_t x, uint64_t y, uint64_t width, uint64_t height)
 {
