@@ -8,11 +8,11 @@ Pattern *pattern_parse_rle(char *path)
     int width;
     int height;
 
-    char line[80];
+    char line[200];
     int x = 0;
     int y = 0;
     int multiplier = 0;
-    while (fgets(line, 80, file) != NULL)
+    while (fgets(line, 200, file) != NULL)
     {
         // Handle comment lines
         if (line[0] == '#')
@@ -27,7 +27,7 @@ Pattern *pattern_parse_rle(char *path)
             sscanf(line, "x = %d, y = %d", &width, &height);
             pattern = pattern_init(name, width, height);
         }
-        else if (isdigit(line[x]) || isalpha(line[x]))
+        else
         {
             for (int i = 0; line[i] != 0; i++)
             {
@@ -56,19 +56,31 @@ Pattern *pattern_parse_rle(char *path)
                     break;
                 case '$':
                     // Move to start of new line.
+                    // If multiplier is zero, set it to the default one for absence of multiplier.
+                    multiplier = multiplier ? multiplier : 1;
                     x = 0;
-                    y++;
+                    y += multiplier;
+                    // Reset multiplier.
                     multiplier = 0;
                     break;
                 case '!':
                     goto EndOfFile;
-                default:
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
                     multiplier = 10 * multiplier + (line[i] - '0');
                     break;
+                default:
+                    continue;
                 }
             }
-        EndOfLine:
-            y += 1;
         }
     }
 
