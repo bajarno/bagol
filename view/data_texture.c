@@ -154,13 +154,20 @@ void data_texture_update_leaf(uint16_t *pixels, RenderData *render_data, QuadTre
 
                 int state = (data & mask) > 0;
                 uint32_t pos = leaf->x * 6 + block_x - 1 - render_data->camera->x + (leaf->y * 6 + block_y - 1 - render_data->camera->y) * render_data->camera->width;
+
+                // TODO: fix such that this is not neccesary
+                if (pos > render_data->camera->width * render_data->camera->height)
+                {
+                    continue;
+                }
+
                 if (render_data->debug_mode)
                 {
                     pixels[pos] = state ? 61455 : 3855;
                 }
                 else
                 {
-                    pixels[pos] = state ? 61167 : 4383;
+                    pixels[pos] = state ? 61167 : 0;
                 }
             }
         }
