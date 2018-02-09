@@ -130,6 +130,6 @@ void tree_step_leaf(QuadTree *tree, Leaf *leaf)
     // deleted from the tree to save computations.
     else if (!new_data && !data)
     {
-        // leaf_delete(leaf);
+        leaf_delete(leaf);
     }
 }

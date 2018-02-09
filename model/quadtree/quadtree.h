@@ -26,6 +26,12 @@ QuadTree *tree_init();
 // a newly created leaf is 0 (All cells death).
 Leaf *tree_get_leaf(QuadTree *, uint32_t, uint32_t);
 
+// Sets leaf at the given position in the given tree to the new data. Current
+// generation data will be overwritten. Only the internal bits of the leaf at
+// the given position are overwritten, external bits of neighbouring leafs are
+// adjusted accordingly. Nonexisting leafs are created.
+void tree_set_leaf(QuadTree *, uint32_t, uint32_t, Block);
+
 // Deletes the given leaf from its tree. After deleting the leaf, its parent
 // quad is also checked for deletion.
 void leaf_delete(Leaf *leaf);

@@ -108,6 +108,71 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
     return quad->sub_quads[position];
 }
 
+void tree_set_leaf(QuadTree *tree, uint32_t x, uint32_t y, Block data)
+{
+    Leaf *leaf = tree_get_leaf(tree, x, y);
+
+    Block mask = INTERNAL_MASK ^ -1;
+    data = data & INTERNAL_MASK;
+    leaf_mask(leaf, tree->current_gen, mask, data);
+
+    // data north edge changed
+    Leaf *neighbour_north = tree_get_leaf(tree, x, y - 1);
+    mask = (INTERNAL_N_MASK << 48) ^ -1;
+    Block data_n = (data & INTERNAL_N_MASK) << 48;
+
+    leaf_mask(neighbour_north, tree->current_gen, mask, data_n);
+
+    // data northwest corner changed
+    Leaf *neighbour_north_west = tree_get_leaf(tree, x - 1, y - 1);
+    mask = (INTERNAL_NW_MASK << 54) ^ -1;
+    Block data_nw = (data & INTERNAL_NW_MASK) << 54;
+
+    leaf_mask(neighbour_north_west, tree->current_gen, mask, data_nw);
+
+    // data northeast corner changed
+    Leaf *neighbour_north_east = tree_get_leaf(tree, x + 1, y - 1);
+    mask = (INTERNAL_NE_MASK << 42) ^ -1;
+    Block data_ne = (data & INTERNAL_NE_MASK) << 42;
+
+    leaf_mask(neighbour_north_east, tree->current_gen, mask, data_ne);
+
+    // data east edge changed
+    Leaf *neighbour_east = tree_get_leaf(tree, x + 1, y);
+    mask = (INTERNAL_E_MASK >> 6) ^ -1;
+    Block data_e = (data & INTERNAL_E_MASK) >> 6;
+
+    leaf_mask(neighbour_east, tree->current_gen, mask, data_e);
+
+    // data south edge changed
+    Leaf *neighbour_south = tree_get_leaf(tree, x, y + 1);
+    mask = (INTERNAL_S_MASK >> 48) ^ -1;
+    Block data_s = (data & INTERNAL_S_MASK) >> 48;
+
+    leaf_mask(neighbour_south, tree->current_gen, mask, data_s);
+
+    // data southwest corner changed
+    Leaf *neighbour_south_west = tree_get_leaf(tree, x - 1, y + 1);
+    mask = (INTERNAL_SW_MASK >> 42) ^ -1;
+    Block data_sw = (data & INTERNAL_SW_MASK) >> 42;
+
+    leaf_mask(neighbour_south_west, tree->current_gen, mask, data_sw);
+
+    // data southeast corner changed
+    Leaf *neighbour_south_east = tree_get_leaf(tree, x + 1, y + 1);
+    mask = (INTERNAL_SE_MASK >> 54) ^ -1;
+    Block data_se = (data & INTERNAL_SE_MASK) >> 54;
+
+    leaf_mask(neighbour_south_east, tree->current_gen, mask, data_se);
+
+    // data west edge changed
+    Leaf *neighbour_west = tree_get_leaf(tree, x - 1, y);
+    mask = (INTERNAL_W_MASK << 6) ^ -1;
+    Block data_w = (data & INTERNAL_W_MASK) << 6;
+
+    leaf_mask(neighbour_west, tree->current_gen, mask, data_w);
+}
+
 void tree_print_bits(QuadTree *tree)
 {
     Block mask = 1;
