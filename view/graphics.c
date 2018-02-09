@@ -55,7 +55,7 @@ RenderData *sdl_init(int width, int height)
 SDL_Window *sdl_create_window(int width, int height)
 {
     SDL_Window *window = SDL_CreateWindow(
-        "hello_sdl2",
+        "bagol",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         width, height,
         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);

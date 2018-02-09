@@ -28,7 +28,7 @@ ifeq ($(OS), Darwin) # Mac os
 endif
 
 #OBJ_NAME specifies the name of our exectuable
-OBJ_NAME = jagol
+OBJ_NAME = bagol
 
 #This is the target that compiles our executable
 all : $(OBJS)
