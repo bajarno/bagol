@@ -18,17 +18,6 @@
 
 int main(int argc, char **argv)
 {
-    // Pattern *pattern = pattern_parse_rle("patterns/gosperglidergun.rle");
-    // for (int y = 0; y < pattern->height; y++)
-    // {
-    //     for (int x = 0; x < pattern->width; x++)
-    //     {
-    //         printf("%d", pattern->data[x][y]);
-    //     }
-    //     printf("\n");
-    // }
-    // return 0;
-
     // Settings
     int screen_width = 600;
     int screen_height = 600;
@@ -54,7 +43,6 @@ int main(int argc, char **argv)
     {
         data.tree = tree_init();
         Leaf *leaf = tree_get_leaf(data.tree, INITIAL_QUAD_POSITION, INITIAL_QUAD_POSITION);
-        leaf->data[data.tree->current_gen] = 8848035282944;
     }
 
     // Initial values
@@ -122,6 +110,8 @@ int event_loop(void *data)
 {
     AppData *app_data = (AppData *)(data);
 
+    Pattern *pattern = pattern_parse_rle("patterns/glider.rle");
+
     // Event loop
     SDL_Event event;
     while (SDL_WaitEvent(&event) && !app_data->quit)
@@ -155,17 +145,57 @@ int event_loop(void *data)
             case SDLK_LEFT:
                 app_data->render_data->camera->x -= 10;
                 break;
+            case SDLK_1:
+                pattern_deinit(pattern);
+                pattern = pattern_parse_rle("patterns/glider.rle");
+                break;
+            case SDLK_2:
+                pattern_deinit(pattern);
+                pattern = pattern_parse_rle("patterns/rpentomino.rle");
+                break;
+            case SDLK_3:
+                pattern_deinit(pattern);
+                pattern = pattern_parse_rle("patterns/gosperglidergun.rle");
+                break;
+            case SDLK_4:
+                pattern_deinit(pattern);
+                pattern = pattern_parse_rle("patterns/movingsawtooth.rle");
+                break;
+            case SDLK_5:
+                pattern_deinit(pattern);
+                pattern = pattern_parse_rle("patterns/p41660p5h2v0gun.rle");
+                break;
             }
         }
-        else if (event.type == SDL_MOUSEBUTTONDOWN && app_data->data_structure != QUADTREE)
+        else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_RIGHT)
         {
+
             int width;
             int height;
             SDL_GetWindowSize(app_data->render_data->window, &width, &height);
 
-            int x = event.button.x * app_data->grid->width / width;
-            int y = event.button.y * app_data->grid->height / height;
-            // add_pattern(RPENTOMINO, app_data->grid, x, y);
+            if (app_data->data_structure == QUADTREE)
+            {
+                uint64_t x = event.button.x + app_data->render_data->camera->x;
+                uint64_t y = event.button.y + app_data->render_data->camera->y;
+
+                SDL_AtomicLock(&app_data->render_data->write_lock);
+                tree_place_pattern(app_data->tree, pattern, x, y);
+                SDL_AtomicUnlock(&app_data->render_data->write_lock);
+            }
+            else
+            {
+                // int x = event.button.x * app_data->grid->width / width;
+                // int y = event.button.y * app_data->grid->height / height;
+
+                // int width;
+                // int height;
+                // SDL_GetWindowSize(app_data->render_data->window, &width, &height);
+
+                // int x = event.button.x * app_data->grid->width / width;
+                // int y = event.button.y * app_data->grid->height / height;
+                // add_pattern(RPENTOMINO, app_data->grid, x, y);
+            }
         }
         else if (event.type == SDL_MOUSEMOTION)
         {
@@ -191,6 +221,8 @@ int event_loop(void *data)
         }
     }
 
+    pattern_deinit(pattern);
+
     return 0;
 }
 
@@ -210,7 +242,7 @@ int update_loop(void *data)
         }
         else
         {
-            SDL_Delay(50);
+            // SDL_Delay(10);
             tree_step(app_data->tree);
         }
 
