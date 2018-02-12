@@ -42,7 +42,6 @@ int main(int argc, char **argv)
     else
     {
         data.tree = tree_init();
-        Leaf *leaf = tree_get_leaf(data.tree, INITIAL_QUAD_POSITION, INITIAL_QUAD_POSITION);
     }
 
     // Initial values
@@ -155,16 +154,23 @@ int event_loop(void *data)
                 break;
             case SDLK_3:
                 pattern_deinit(pattern);
-                pattern = pattern_parse_rle("patterns/gosperglidergun.rle");
+                pattern = pattern_parse_rle("patterns/104p177.rle");
                 break;
             case SDLK_4:
                 pattern_deinit(pattern);
-                pattern = pattern_parse_rle("patterns/movingsawtooth.rle");
+                pattern = pattern_parse_rle("patterns/gosperglidergun.rle");
                 break;
             case SDLK_5:
                 pattern_deinit(pattern);
+                pattern = pattern_parse_rle("patterns/movingsawtooth.rle");
+                break;
+            case SDLK_6:
+                pattern_deinit(pattern);
                 pattern = pattern_parse_rle("patterns/p41660p5h2v0gun.rle");
                 break;
+            case SDLK_7:
+                pattern_deinit(pattern);
+                pattern = pattern_parse_rle("patterns/Conway%20life%20clock%20PM%20only.rle");
             }
         }
         else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_RIGHT)
@@ -242,7 +248,7 @@ int update_loop(void *data)
         }
         else
         {
-            // SDL_Delay(10);
+            // SDL_Delay(100);
             tree_step(app_data->tree);
         }
 
