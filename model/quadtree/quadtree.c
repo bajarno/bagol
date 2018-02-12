@@ -19,17 +19,19 @@ QuadTree *tree_init()
     return tree;
 }
 
-void leaf_delete(Leaf *leaf)
+void tree_delete_leaf(Leaf *leaf)
 {
     int pos_in_parent = leaf_global_to_local_pos(leaf);
     Quad *parent = leaf->parent;
-    free(parent->sub_quads[pos_in_parent]);
-    parent->sub_quads[pos_in_parent] = NULL;
 
-    quad_delete(parent);
+    leaf_deinit(leaf);
+    parent->sub_quads[pos_in_parent] = NULL;
+    parent->metadata &= (METADATA_EXIST_0 << pos_in_parent) ^ -1;
+
+    tree_delete_quad(parent);
 }
 
-void quad_delete(Quad *quad)
+void tree_delete_quad(Quad *quad)
 {
     // If the quad has no parent, it must not be deleted.
     if (quad->parent == NULL)
@@ -40,7 +42,7 @@ void quad_delete(Quad *quad)
     // If the quad has any sub quad, it must not be deleted.
     for (int i = 0; i < 4; i++)
     {
-        if (quad->sub_quads[i] != NULL)
+        if (quad->metadata & (METADATA_EXIST_0 << i))
         {
             return;
         }
@@ -48,38 +50,39 @@ void quad_delete(Quad *quad)
 
     int pos_in_parent = quad_global_to_local_pos(quad);
     Quad *parent = quad->parent;
-    free(parent->sub_quads[pos_in_parent]);
-    parent->sub_quads[pos_in_parent] = NULL;
 
-    // TODO: FIX
-    quad_delete(parent);
+    quad_deinit(quad);
+    parent->sub_quads[pos_in_parent] = NULL;
+    parent->metadata &= (METADATA_EXIST_0 << pos_in_parent) ^ -1;
+
+    tree_delete_quad(parent);
 }
 
 Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
 {
-    Quad *parent_quad = tree->parent_quad;
-    uint8_t parent_level = parent_quad->level;
+    Quad *parent = tree->parent_quad;
+    uint8_t parent_level = parent->level;
 
     // Mask for checking position while ignoring lower levels.
     uint32_t position_mask = UINT32_MAX << parent_level;
     // Check if position is below the current parent quad, if not, expand tree at top.
-    while ((parent_quad->x & position_mask) != (x & position_mask) || (parent_quad->y & position_mask) != (y & position_mask))
+    while ((parent->x & position_mask) != (x & position_mask) || (parent->y & position_mask) != (y & position_mask))
     {
         parent_level += 1;
         position_mask = UINT32_MAX << parent_level;
 
-        int old_parent_position = quad_global_to_local_pos(parent_quad);
+        int old_parent_position = quad_global_to_local_pos(parent);
 
-        Quad *new_parent_quad = quad_init(parent_quad->x & position_mask, parent_quad->y & position_mask, parent_level, NULL);
-        new_parent_quad->sub_quads[old_parent_position] = parent_quad;
+        Quad *new_parent = quad_init(parent->x & position_mask, parent->y & position_mask, parent_level, NULL);
+        quad_set_sub_quad(new_parent, parent, old_parent_position);
 
-        parent_quad->parent = new_parent_quad;
-        parent_quad = new_parent_quad;
+        parent->parent = new_parent;
+        parent = new_parent;
 
-        tree->parent_quad = parent_quad;
+        tree->parent_quad = parent;
     }
 
-    Quad *quad = parent_quad;
+    Quad *quad = parent;
     uint8_t level = parent_level;
     // Walk down the tree till the lowest level, if a needed sub quad does not exist, it is created.
     while (level > 1)
@@ -90,9 +93,10 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
         int position = global_to_local_pos(x, y, level);
 
         // If the sub quad does not exist, create it
-        if (quad->sub_quads[position] == NULL)
+        if (!(quad->metadata & (METADATA_EXIST_0 << position)))
         {
-            quad->sub_quads[position] = quad_init(x & position_mask, y & position_mask, level, quad);
+            Quad *sub_quad = quad_init(x & position_mask, y & position_mask, level, quad);
+            quad_set_sub_quad(quad, sub_quad, position);
         }
 
         quad = quad->sub_quads[position];
@@ -100,9 +104,10 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
 
     int position = global_to_local_pos(x, y, 0);
     // If the leaf does not exist, create it.
-    if (quad->sub_quads[position] == NULL)
+    if (!(quad->metadata & (METADATA_EXIST_0 << position)))
     {
-        quad->sub_quads[position] = leaf_init(x, y, quad);
+        Leaf *leaf = leaf_init(x, y, quad);
+        quad_set_sub_quad(quad, leaf, position);
     }
 
     return quad->sub_quads[position];

@@ -111,7 +111,7 @@ void data_texture_update_quad(uint16_t *pixels, RenderData *render_data, QuadTre
 
         for (int i = 0; i < 4; i++)
         {
-            if (quad->sub_quads[i] != NULL)
+            if (quad->metadata & (METADATA_EXIST_0 << i))
             {
                 if (quad->level > 1)
                 {
@@ -163,7 +163,7 @@ void data_texture_update_leaf(uint16_t *pixels, RenderData *render_data, QuadTre
 
                 if (render_data->debug_mode)
                 {
-                    pixels[pos] = state ? 61455 : 3855;
+                    pixels[pos] = state ? 61455 : 61167;
                 }
                 else
                 {

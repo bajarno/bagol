@@ -32,8 +32,6 @@ void tree_place_pattern(QuadTree *tree, Pattern *pattern, uint64_t x, uint64_t y
     uint8_t leaf_offset_x = x % 6;
     uint8_t leaf_offset_y = y % 6;
 
-    printf("x_offset: %d, y_offset: %d\n", leaf_offset_y, leaf_offset_y);
-
     uint32_t width_leafs = (pattern->width + leaf_offset_x + 5) / 6;
     uint32_t height_leafs = (pattern->height + leaf_offset_y + 5) / 6;
 
@@ -61,7 +59,7 @@ void tree_place_pattern(QuadTree *tree, Pattern *pattern, uint64_t x, uint64_t y
 
                     // If the cell is outside of the pattern boundaries, it is
                     // kept unchanged.
-                    if (cell_x < 0 || cell_x >= pattern->width || cell_y < 0 || cell_y >= pattern->height)
+                    if (cell_x >= pattern->width || cell_y >= pattern->height)
                     {
                         continue;
                     }

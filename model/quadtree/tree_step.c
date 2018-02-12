@@ -17,7 +17,8 @@ void tree_step_quad(QuadTree *tree, Quad *quad)
 {
     for (int i = 0; i < 4; i++)
     {
-        if (quad->sub_quads[i] != NULL)
+
+        if (quad->metadata & (METADATA_EXIST_0 << i))
         {
             if (quad->level > 1)
             {
@@ -130,6 +131,9 @@ void tree_step_leaf(QuadTree *tree, Leaf *leaf)
     // deleted from the tree to save computations.
     else if (!new_data && !data)
     {
-        leaf_delete(leaf);
+        // Lock for rendering if structure changes
+        SDL_AtomicLock(&tree->read_lock);
+        tree_delete_leaf(leaf);
+        SDL_AtomicUnlock(&tree->read_lock);
     }
 }

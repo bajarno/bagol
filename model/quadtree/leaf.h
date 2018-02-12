@@ -24,3 +24,6 @@ void leaf_mask(Leaf *, int, Block, Block);
 
 // Returns the position of the leaf in the parent quad.
 int leaf_global_to_local_pos(Leaf *);
+
+// Frees all memory associated with the leaf.
+void leaf_deinit(Leaf *leaf);

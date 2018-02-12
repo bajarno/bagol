@@ -35,3 +35,9 @@ int leaf_global_to_local_pos(Leaf *leaf)
 {
     return global_to_local_pos(leaf->x, leaf->y, 0);
 }
+
+void leaf_deinit(Leaf *leaf)
+{
+    free(leaf->data);
+    free(leaf);
+}

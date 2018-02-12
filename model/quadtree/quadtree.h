@@ -34,7 +34,7 @@ void tree_set_leaf(QuadTree *, uint32_t, uint32_t, Block);
 
 // Deletes the given leaf from its tree. After deleting the leaf, its parent
 // quad is also checked for deletion.
-void leaf_delete(Leaf *leaf);
+void tree_delete_leaf(Leaf *leaf);
 
 // Deletes the given quad from its tree if possible.
-void quad_delete(Quad *quad);
+void tree_delete_quad(Quad *quad);
