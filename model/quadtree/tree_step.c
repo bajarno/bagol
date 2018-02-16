@@ -18,7 +18,7 @@ void tree_step_quad(QuadTree *tree, Quad *quad)
     for (int i = 0; i < 4; i++)
     {
 
-        if (quad->metadata & (METADATA_EXIST_0 << i))
+        if (quad->metadata & (METADATA_CHECK_0 << i))
         {
             if (quad->level > 1)
             {
@@ -41,6 +41,14 @@ void tree_step_leaf(QuadTree *tree, Leaf *leaf)
 
     Block data = leaf->data[tree->current_gen];
     Block new_data = leaf->data[new_gen];
+
+    // If the new data is equal to the old data, this leaf does not need to be
+    // checked in future generations.
+    if (new_data == data)
+    {
+        int position = leaf_global_to_local_pos(leaf);
+        quad_set_check(leaf->parent, 0, position);
+    }
 
     // If any data in the edges changed, update neighbouring blocks
     if ((new_data & INTERNAL_EDGE_MASK) != (old_data & INTERNAL_EDGE_MASK))
@@ -127,9 +135,10 @@ void tree_step_leaf(QuadTree *tree, Leaf *leaf)
             leaf_mask(neighbour_west, new_gen, mask, data);
         }
     }
+
     // If the new data and the current data is both zero, the leaf can be
     // deleted from the tree to save computations.
-    else if (!new_data && !data)
+    if (!new_data && !data)
     {
         // Lock for rendering if structure changes
         SDL_AtomicLock(&tree->read_lock);

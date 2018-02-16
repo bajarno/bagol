@@ -248,7 +248,7 @@ int update_loop(void *data)
         }
         else
         {
-            // SDL_Delay(100);
+            // SDL_Delay(200);
             tree_step(app_data->tree);
         }
 

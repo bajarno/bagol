@@ -24,6 +24,9 @@ void tree_delete_leaf(Leaf *leaf)
     int pos_in_parent = leaf_global_to_local_pos(leaf);
     Quad *parent = leaf->parent;
 
+    // Nonexistent leaf should not be checked.
+    quad_set_check(parent, 0, pos_in_parent);
+
     leaf_deinit(leaf);
     parent->sub_quads[pos_in_parent] = NULL;
     parent->metadata &= (METADATA_EXIST_0 << pos_in_parent) ^ -1;
@@ -51,6 +54,9 @@ void tree_delete_quad(Quad *quad)
     int pos_in_parent = quad_global_to_local_pos(quad);
     Quad *parent = quad->parent;
 
+    // Nonexistent quad should not be checked.
+    quad_set_check(parent, 0, pos_in_parent);
+
     quad_deinit(quad);
     parent->sub_quads[pos_in_parent] = NULL;
     parent->metadata &= (METADATA_EXIST_0 << pos_in_parent) ^ -1;
@@ -75,6 +81,7 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
 
         Quad *new_parent = quad_init(parent->x & position_mask, parent->y & position_mask, parent_level, NULL);
         quad_set_sub_quad(new_parent, parent, old_parent_position);
+        quad_set_check(new_parent, 1, old_parent_position);
 
         parent->parent = new_parent;
         parent = new_parent;
@@ -108,6 +115,10 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
     {
         Leaf *leaf = leaf_init(x, y, quad);
         quad_set_sub_quad(quad, leaf, position);
+
+        // New leafs must always be checked since they otherwise can stay empty
+        // without being removed from the tree.
+        quad_set_check(leaf->parent, 1, position);
     }
 
     return quad->sub_quads[position];

@@ -1,3 +1,5 @@
+uint8_t METADATA_CHECK = 15;
+
 uint8_t METADATA_CHECK_0 = 1;
 uint8_t METADATA_EXIST_0 = 16;
 
@@ -26,8 +28,16 @@ typedef struct Quad
 // Initializes a new quad instance.
 Quad *quad_init(uint32_t, uint32_t, uint8_t, Quad *);
 
+// Sets the checkbit in the metadata of the sub quad at the given position to
+// the given value.
+void quad_set_check(Quad *, int, int);
+
+// Gets the checkbit in the metadata of the parent quad representing the given
+// quad.
+int quad_get_check(Quad *);
+
 // Sets sub quad at given position. Adjusts metadata accordingly.
-void quad_set_sub_quad(Quad *, void *, uint8_t);
+void quad_set_sub_quad(Quad *, void *, int);
 
 // Returns the position of the quad in the parent quad.
 int quad_global_to_local_pos(Quad *);

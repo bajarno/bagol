@@ -88,7 +88,7 @@ void data_texture_update_quad(uint16_t *pixels, RenderData *render_data, QuadTre
     {
         if (render_data->debug_mode)
         {
-            int color = 16 - quad->level;
+            int color = quad_get_check(quad) ? 254 - quad->level : 15 - quad->level;
 
             int min_x = quad->x * 6 - render_data->camera->x;
             min_x = min_x < 0 ? 0 : min_x;
@@ -163,7 +163,7 @@ void data_texture_update_leaf(uint16_t *pixels, RenderData *render_data, QuadTre
 
                 if (render_data->debug_mode)
                 {
-                    pixels[pos] = state ? 61455 : 61167;
+                    pixels[pos] = state ? 0 : leaf_get_check(leaf) ? 65535 : 3855;
                 }
                 else
                 {

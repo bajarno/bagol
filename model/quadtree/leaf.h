@@ -22,6 +22,10 @@ void leaf_step(Leaf *, int);
 // is filled in.
 void leaf_mask(Leaf *, int, Block, Block);
 
+// Gets the checkbit in the metadata of the parent quad representing the given
+// leaf.
+int leaf_get_check(Leaf *);
+
 // Returns the position of the leaf in the parent quad.
 int leaf_global_to_local_pos(Leaf *);
 
