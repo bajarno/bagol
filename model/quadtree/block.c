@@ -9,30 +9,25 @@ Block block_step(Block data)
     {
         for (int y = 1; y < 7; y++)
         {
+            // Position of the current bit in the block.
             uint8_t pos = x + y * 8;
 
-            // Create mask to set everything other than neighbouring cells to 0.
-            Block mask = NEIGHBOURS_MASK_POS_9 << (pos - 9);
-            Block masked_neighbours = data & mask;
-
             // Use built in count to get amount of bits at 1 in masked block.
-            int living = __builtin_popcountll(masked_neighbours);
+            int living = __builtin_popcountll(data & neighbours_mask[pos]);
 
             // If living is equal to 2, nothing has to change.
             if (living != 2)
             {
-                // Calculate values for masking and unmasking current bit.
-                Block bit_mask = 1;
-                bit_mask <<= pos;
-                Block bit_unmask = bit_mask ^ -1;
-
-                // Set bit value to 0 (death).
-                new_data &= bit_unmask;
-
                 // If exactly three neighbours are alive, set bit to 1 (alive).
                 if (living == 3)
                 {
-                    new_data |= bit_mask;
+                    // Set bit value to 1 (alive).
+                    new_data |= bit_mask[pos];
+                }
+                else
+                {
+                    // Set bit value to 0 (death).
+                    new_data &= bit_unmask[pos];
                 }
             }
         }
