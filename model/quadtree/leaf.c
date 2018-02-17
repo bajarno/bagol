@@ -10,6 +10,7 @@ Leaf *leaf_init(uint32_t x, uint32_t y, Quad *parent)
     leaf->y = y;
 
     leaf->data = calloc(2, sizeof(*leaf->data));
+    leaf->data_change = 0;
 
     leaf->parent = parent;
 
@@ -35,6 +36,7 @@ void leaf_mask(Leaf *leaf, int gen, Block mask, Block data)
     // If data changed, set checkbit for this leaf to true.
     if (leaf->data[gen] != old_data)
     {
+        leaf->data_change = 1;
         quad_set_check(leaf->parent, 1, leaf->pos_in_parent);
     }
 }

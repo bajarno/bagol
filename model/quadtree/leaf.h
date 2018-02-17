@@ -9,6 +9,9 @@ typedef struct Leaf
     // data. Initially will contain zero blocks (all cells death).
     Block *data;
 
+    // A value indicating whether any changes were applied since the last step.
+    uint8_t data_change;
+
     // The quad containing the leaf.
     Quad *parent;
 

@@ -41,15 +41,14 @@ void tree_step_leaf(QuadTree *tree, Leaf *leaf)
     Block data = leaf->data[tree->current_gen];
     Block new_data = leaf->data[new_gen];
 
-    // If the new data is equal to the old data, this leaf does not need to be
-    // checked in future generations.
-    if (new_data == data)
+    // If the data did not change since the last step, it does not need to be
+    // checked.
+    if (!leaf->data_change)
     {
         quad_set_check(leaf->parent, 0, leaf->pos_in_parent);
     }
-
     // If any data in the edges changed, update neighbouring blocks
-    if ((new_data & INTERNAL_EDGE_MASK) != (old_data & INTERNAL_EDGE_MASK))
+    else if ((new_data & INTERNAL_EDGE_MASK) != (old_data & INTERNAL_EDGE_MASK))
     {
         uint32_t x = leaf->x;
         uint32_t y = leaf->y;
@@ -143,4 +142,7 @@ void tree_step_leaf(QuadTree *tree, Leaf *leaf)
         tree_delete_leaf(leaf);
         SDL_AtomicUnlock(&tree->read_lock);
     }
+
+    // Reset data_change to 0.
+    leaf->data_change = 0;
 }
