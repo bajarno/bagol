@@ -60,6 +60,9 @@ typedef struct Quad
 
     // The quad containing the quad, or NULL if quad is top layer.
     struct Quad *parent;
+
+    // Local position of the quad in its parent.
+    uint8_t pos_in_parent;
 } Quad;
 
 // Initializes a new quad instance.
@@ -75,12 +78,6 @@ int quad_get_check(Quad *);
 
 // Sets sub quad at given position. Adjusts metadata accordingly.
 void quad_set_sub_quad(Quad *, void *, int);
-
-// Returns the position of the quad in the parent quad.
-int quad_global_to_local_pos(Quad *);
-
-// Returns the given position in the parent quad.
-int global_to_local_pos(uint32_t, uint32_t, uint8_t);
 
 // Frees all memory associated with the quad.
 void quad_deinit(Quad *quad);

@@ -11,6 +11,9 @@ typedef struct Leaf
 
     // The quad containing the leaf.
     Quad *parent;
+
+    // Local position of the leaf in its parent.
+    uint8_t pos_in_parent;
 } Leaf;
 
 // Initializes a new leaf instance. Data will be initialized with value 0.
@@ -27,8 +30,8 @@ void leaf_mask(Leaf *, int, Block, Block);
 // leaf.
 int leaf_get_check(Leaf *);
 
-// Returns the position of the leaf in the parent quad.
-int leaf_global_to_local_pos(Leaf *);
+// Returns the given position in the parent quad.
+uint8_t global_to_local_pos(uint32_t, uint32_t, uint8_t);
 
 // Frees all memory associated with the leaf.
 void leaf_deinit(Leaf *leaf);

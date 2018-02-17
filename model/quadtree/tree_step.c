@@ -45,8 +45,7 @@ void tree_step_leaf(QuadTree *tree, Leaf *leaf)
     // checked in future generations.
     if (new_data == data)
     {
-        int position = leaf_global_to_local_pos(leaf);
-        quad_set_check(leaf->parent, 0, position);
+        quad_set_check(leaf->parent, 0, leaf->pos_in_parent);
     }
 
     // If any data in the edges changed, update neighbouring blocks

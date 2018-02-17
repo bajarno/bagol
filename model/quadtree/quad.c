@@ -16,6 +16,8 @@ Quad *quad_init(uint32_t x, uint32_t y, uint8_t level, Quad *parent)
     // Allocate memory for pointers to sublayer
     quad->sub_quads = malloc(4 * sizeof(*quad->sub_quads));
 
+    quad->pos_in_parent = global_to_local_pos(x, y, level);
+
     return quad;
 }
 
@@ -35,9 +37,8 @@ void quad_set_check(Quad *quad, int value, int position)
     if (quad->metadata != old_metadata && quad->parent != NULL)
     {
         int check = (quad->metadata & metadata_check_mask_all) > 0;
-        int position_in_parent = quad_global_to_local_pos(quad);
 
-        quad_set_check(quad->parent, check, position_in_parent);
+        quad_set_check(quad->parent, check, quad->pos_in_parent);
     }
 }
 
@@ -51,8 +52,7 @@ int quad_get_check(Quad *quad)
 
     uint8_t metadata = quad->parent->metadata;
 
-    int position = quad_global_to_local_pos(quad);
-    uint8_t mask = metadata_check_mask[position];
+    uint8_t mask = metadata_check_mask[quad->pos_in_parent];
 
     return (metadata & mask) > 0;
 }
@@ -61,16 +61,6 @@ void quad_set_sub_quad(Quad *parent_quad, void *sub_quad, int position)
 {
     parent_quad->sub_quads[position] = sub_quad;
     parent_quad->metadata |= metadata_exist_mask[position];
-}
-
-int quad_global_to_local_pos(Quad *quad)
-{
-    return global_to_local_pos(quad->x, quad->y, quad->level);
-}
-
-int global_to_local_pos(uint32_t x, uint32_t y, uint8_t level)
-{
-    return ((x & bit_mask[level]) > 0) + ((y & bit_mask[level]) > 0) * 2;
 }
 
 void quad_deinit(Quad *quad)

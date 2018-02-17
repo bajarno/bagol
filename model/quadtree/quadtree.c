@@ -21,15 +21,14 @@ QuadTree *tree_init()
 
 void tree_delete_leaf(Leaf *leaf)
 {
-    int pos_in_parent = leaf_global_to_local_pos(leaf);
     Quad *parent = leaf->parent;
 
     // Nonexistent leaf should not be checked.
-    quad_set_check(parent, 0, pos_in_parent);
+    quad_set_check(parent, 0, leaf->pos_in_parent);
 
     leaf_deinit(leaf);
-    parent->sub_quads[pos_in_parent] = NULL;
-    parent->metadata &= metadata_exist_unmask[pos_in_parent];
+    parent->sub_quads[leaf->pos_in_parent] = NULL;
+    parent->metadata &= metadata_exist_unmask[leaf->pos_in_parent];
 
     tree_delete_quad(parent);
 }
@@ -48,15 +47,14 @@ void tree_delete_quad(Quad *quad)
         return;
     }
 
-    int pos_in_parent = quad_global_to_local_pos(quad);
     Quad *parent = quad->parent;
 
     // Nonexistent quad should not be checked.
-    quad_set_check(parent, 0, pos_in_parent);
+    quad_set_check(parent, 0, quad->pos_in_parent);
 
     quad_deinit(quad);
-    parent->sub_quads[pos_in_parent] = NULL;
-    parent->metadata &= metadata_exist_unmask[pos_in_parent];
+    parent->sub_quads[quad->pos_in_parent] = NULL;
+    parent->metadata &= metadata_exist_unmask[quad->pos_in_parent];
 
     tree_delete_quad(parent);
 }
@@ -74,11 +72,9 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
         parent_level += 1;
         position_mask = UINT32_MAX << parent_level;
 
-        int old_parent_position = quad_global_to_local_pos(parent);
-
         Quad *new_parent = quad_init(parent->x & position_mask, parent->y & position_mask, parent_level, NULL);
-        quad_set_sub_quad(new_parent, parent, old_parent_position);
-        quad_set_check(new_parent, 1, old_parent_position);
+        quad_set_sub_quad(new_parent, parent, parent->pos_in_parent);
+        quad_set_check(new_parent, 1, parent->pos_in_parent);
 
         parent->parent = new_parent;
         parent = new_parent;
