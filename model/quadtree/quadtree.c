@@ -29,7 +29,7 @@ void tree_delete_leaf(Leaf *leaf)
 
     leaf_deinit(leaf);
     parent->sub_quads[pos_in_parent] = NULL;
-    parent->metadata &= (METADATA_EXIST_0 << pos_in_parent) ^ -1;
+    parent->metadata &= metadata_exist_unmask[pos_in_parent];
 
     tree_delete_quad(parent);
 }
@@ -43,12 +43,9 @@ void tree_delete_quad(Quad *quad)
     }
 
     // If the quad has any sub quad, it must not be deleted.
-    for (int i = 0; i < 4; i++)
+    if (quad->metadata & metadata_exist_mask_all)
     {
-        if (quad->metadata & (METADATA_EXIST_0 << i))
-        {
-            return;
-        }
+        return;
     }
 
     int pos_in_parent = quad_global_to_local_pos(quad);
@@ -59,7 +56,7 @@ void tree_delete_quad(Quad *quad)
 
     quad_deinit(quad);
     parent->sub_quads[pos_in_parent] = NULL;
-    parent->metadata &= (METADATA_EXIST_0 << pos_in_parent) ^ -1;
+    parent->metadata &= metadata_exist_unmask[pos_in_parent];
 
     tree_delete_quad(parent);
 }
@@ -100,7 +97,7 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
         int position = global_to_local_pos(x, y, level);
 
         // If the sub quad does not exist, create it
-        if (!(quad->metadata & (METADATA_EXIST_0 << position)))
+        if (!(quad->metadata & metadata_exist_mask[position]))
         {
             Quad *sub_quad = quad_init(x & position_mask, y & position_mask, level, quad);
             quad_set_sub_quad(quad, sub_quad, position);
@@ -111,7 +108,7 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
 
     int position = global_to_local_pos(x, y, 0);
     // If the leaf does not exist, create it.
-    if (!(quad->metadata & (METADATA_EXIST_0 << position)))
+    if (!(quad->metadata & metadata_exist_mask[position]))
     {
         Leaf *leaf = leaf_init(x, y, quad);
         quad_set_sub_quad(quad, leaf, position);

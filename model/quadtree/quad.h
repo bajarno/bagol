@@ -1,7 +1,44 @@
-uint8_t METADATA_CHECK = 15;
+// Mask for all check bits in metadata of a quad.
+const uint8_t metadata_check_mask_all = 15;
 
-uint8_t METADATA_CHECK_0 = 1;
-uint8_t METADATA_EXIST_0 = 16;
+// Mask for all exist bits in metadata of a quad.
+const uint8_t metadata_exist_mask_all = 240;
+
+// Lookup table for mask of check bit of a position in a quad. Position in
+// the list corresponds to local position in the quad.
+const uint8_t metadata_check_mask[] = {
+    1,
+    2,
+    4,
+    8,
+};
+
+// Lookup table for mask of all bits except check bit of a position in a quad.
+// Position in the list corresponds to local position in the quad.
+const uint8_t metadata_check_unmask[] = {
+    254,
+    253,
+    251,
+    247,
+};
+
+// Lookup table for mask of exist bit of a position in a quad. Position in
+// the list corresponds to local position in the quad.
+const uint8_t metadata_exist_mask[] = {
+    16,
+    32,
+    64,
+    128,
+};
+
+// Lookup table for mask of all bits except exist bit of a position in a quad.
+// Position in the list corresponds to local position in the quad.
+const uint8_t metadata_exist_unmask[] = {
+    239,
+    223,
+    191,
+    127,
+};
 
 // Represents a node in a quadtree.
 typedef struct Quad

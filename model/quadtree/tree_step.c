@@ -17,8 +17,7 @@ void tree_step_quad(QuadTree *tree, Quad *quad)
 {
     for (int i = 0; i < 4; i++)
     {
-
-        if (quad->metadata & (METADATA_CHECK_0 << i))
+        if (quad->metadata & metadata_check_mask[i])
         {
             if (quad->level > 1)
             {

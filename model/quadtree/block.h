@@ -224,6 +224,9 @@ const uint64_t INTERNAL_SW_MASK = 562949953421312;     // Internal south-west co
 const uint64_t INTERNAL_W_MASK = 565157600297472;      // Internal west edge.
 const uint64_t INTERNAL_NW_MASK = 512;                 // Internal north-west corner.
 
+// Used to mask the external data of a block.
+const uint64_t EXTERNAL_MASK = 18411139144890810879ULL;
+
 // Calculates the next generation for the given block. Will only change internal
 // data, but also return external data.
 Block block_step(Block);

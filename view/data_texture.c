@@ -111,7 +111,7 @@ void data_texture_update_quad(uint16_t *pixels, RenderData *render_data, QuadTre
 
         for (int i = 0; i < 4; i++)
         {
-            if (quad->metadata & (METADATA_EXIST_0 << i))
+            if (quad->metadata & metadata_exist_mask[i])
             {
                 if (quad->level > 1)
                 {

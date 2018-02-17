@@ -18,11 +18,9 @@ Leaf *leaf_init(uint32_t x, uint32_t y, Quad *parent)
 
 void leaf_step(Leaf *leaf, int base_gen)
 {
-    int next_gen = !base_gen;
-
     Block new_data = block_step(leaf->data[base_gen]);
 
-    leaf_mask(leaf, next_gen, INTERNAL_MASK ^ -1, INTERNAL_MASK & new_data);
+    leaf_mask(leaf, !base_gen, EXTERNAL_MASK, INTERNAL_MASK & new_data);
 }
 
 void leaf_mask(Leaf *leaf, int gen, Block mask, Block data)
@@ -32,6 +30,7 @@ void leaf_mask(Leaf *leaf, int gen, Block mask, Block data)
     leaf->data[gen] &= mask;
     leaf->data[gen] |= data;
 
+    // If data changed, set checkbit for this leaf to true.
     if (leaf->data[gen] != old_data)
     {
         int position = leaf_global_to_local_pos(leaf);
@@ -44,7 +43,7 @@ int leaf_get_check(Leaf *leaf)
     uint8_t metadata = leaf->parent->metadata;
 
     int position = leaf_global_to_local_pos(leaf);
-    uint8_t mask = METADATA_CHECK_0 << position;
+    uint8_t mask = metadata_check_mask[position];
 
     return (metadata & mask) > 0;
 }

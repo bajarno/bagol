@@ -5,7 +5,8 @@ typedef struct Leaf
     uint32_t x;
     uint32_t y;
 
-    // An array of length 2 containing the previous and the current generation data
+    // An array of length 2 containing the previous and the current generation
+    // data. Initially will contain zero blocks (all cells death).
     Block *data;
 
     // The quad containing the leaf.
