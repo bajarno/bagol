@@ -15,7 +15,6 @@ typedef struct QuadTree
 
     // SpinLock for reading and writing to data, used for blocking access by other threads.
     SDL_SpinLock write_lock;
-    SDL_SpinLock read_lock;
 } QuadTree;
 
 // Initializes a new quadtree instance.

@@ -18,6 +18,9 @@ Quad *quad_init(uint32_t x, uint32_t y, uint8_t level, Quad *parent)
 
     quad->pos_in_parent = global_to_local_pos(x, y, level);
 
+    // Set lock values to 0 (unlocked)
+    quad->read_lock = 0;
+
     return quad;
 }
 

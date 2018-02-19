@@ -69,11 +69,7 @@ void data_texture_update_tree(RenderData *render_data, QuadTree *tree)
     int size = width * height;
     uint16_t *pixels = calloc(size, sizeof(*pixels));
 
-    SDL_AtomicLock(&tree->read_lock);
-
     data_texture_update_quad(pixels, render_data, tree, tree->parent_quad);
-
-    SDL_AtomicUnlock(&tree->read_lock);
 
     SDL_UpdateTexture(render_data->data_texture, NULL, pixels, width * sizeof(uint16_t));
 
@@ -84,6 +80,8 @@ void data_texture_update_tree(RenderData *render_data, QuadTree *tree)
 
 void data_texture_update_quad(uint16_t *pixels, RenderData *render_data, QuadTree *tree, Quad *quad)
 {
+    SDL_AtomicLock(&quad->read_lock);
+
     if (camera_quad_overlap_check(render_data->camera, quad))
     {
         if (render_data->debug_mode)
@@ -124,6 +122,8 @@ void data_texture_update_quad(uint16_t *pixels, RenderData *render_data, QuadTre
             }
         }
     }
+
+    SDL_AtomicUnlock(&quad->read_lock);
 }
 
 void data_texture_update_leaf(uint16_t *pixels, RenderData *render_data, QuadTree *tree, Leaf *leaf)

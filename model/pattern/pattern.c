@@ -24,7 +24,6 @@ Pattern *pattern_init(char *name, int width, int height)
 void tree_place_pattern(QuadTree *tree, Pattern *pattern, uint64_t x, uint64_t y)
 {
     SDL_AtomicLock(&tree->write_lock);
-    SDL_AtomicLock(&tree->read_lock);
 
     uint32_t leaf_min_x = x / 6;
     uint32_t leaf_min_y = y / 6;
@@ -78,7 +77,6 @@ void tree_place_pattern(QuadTree *tree, Pattern *pattern, uint64_t x, uint64_t y
         }
     }
 
-    SDL_AtomicUnlock(&tree->read_lock);
     SDL_AtomicUnlock(&tree->write_lock);
 }
 

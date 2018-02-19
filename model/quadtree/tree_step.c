@@ -6,9 +6,7 @@ void tree_step(QuadTree *tree)
 
     tree_step_quad(tree, tree->parent_quad);
 
-    SDL_AtomicLock(&tree->read_lock);
     tree->current_gen = !tree->current_gen;
-    SDL_AtomicUnlock(&tree->read_lock);
 
     SDL_AtomicUnlock(&tree->write_lock);
 }
@@ -137,10 +135,7 @@ void tree_step_leaf(QuadTree *tree, Leaf *leaf)
     // deleted from the tree to save computations.
     if (!new_data && !data)
     {
-        // Lock for rendering if structure changes
-        SDL_AtomicLock(&tree->read_lock);
         tree_delete_leaf(leaf);
-        SDL_AtomicUnlock(&tree->read_lock);
     }
 
     // Reset data_change to 0.

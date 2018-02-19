@@ -14,7 +14,6 @@ QuadTree *tree_init()
 
     // Set lock values to 0 (unlocked)
     tree->write_lock = 0;
-    tree->read_lock = 0;
 
     return tree;
 }
@@ -26,10 +25,20 @@ void tree_delete_leaf(Leaf *leaf)
     // Nonexistent leaf should not be checked.
     quad_set_check(parent, 0, leaf->pos_in_parent);
 
-    leaf_deinit(leaf);
-    parent->sub_quads[leaf->pos_in_parent] = NULL;
+    // Lock parent quad from being read since structure will change.
+    SDL_AtomicLock(&parent->read_lock);
+
     parent->metadata &= metadata_exist_unmask[leaf->pos_in_parent];
 
+    // Unlock parent for reading
+    SDL_AtomicUnlock(&parent->read_lock);
+
+    // Set pointer to Null and deinit leaf. Outside of lock to lock as little as
+    // possible.
+    parent->sub_quads[leaf->pos_in_parent] = NULL;
+    leaf_deinit(leaf);
+
+    // Check wheter parent can also be deleted and if so, delete it.
     tree_delete_quad(parent);
 }
 
@@ -52,10 +61,20 @@ void tree_delete_quad(Quad *quad)
     // Nonexistent quad should not be checked.
     quad_set_check(parent, 0, quad->pos_in_parent);
 
-    quad_deinit(quad);
-    parent->sub_quads[quad->pos_in_parent] = NULL;
+    // Lock parent quad from being read since structure will change.
+    SDL_AtomicLock(&parent->read_lock);
+
     parent->metadata &= metadata_exist_unmask[quad->pos_in_parent];
 
+    // Unlock parent for reading
+    SDL_AtomicUnlock(&parent->read_lock);
+
+    // Set pointer to Null and deinit quad. Outside of lock to lock as little as
+    // possible.
+    quad_deinit(quad);
+    parent->sub_quads[quad->pos_in_parent] = NULL;
+
+    // Check wheter parent can also be deleted and if so, delete it.
     tree_delete_quad(parent);
 }
 

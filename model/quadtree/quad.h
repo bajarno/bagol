@@ -63,6 +63,10 @@ typedef struct Quad
 
     // Local position of the quad in its parent.
     uint8_t pos_in_parent;
+
+    // SpinLock for reading and writing to data of quad, used for blocking
+    // access by other threads.
+    SDL_SpinLock read_lock;
 } Quad;
 
 // Initializes a new quad instance.
