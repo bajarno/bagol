@@ -17,6 +17,10 @@ typedef struct Leaf
 
     // Local position of the leaf in its parent.
     uint8_t pos_in_parent;
+
+    // SpinLock for reading and writing to data of leaf, used for blocking
+    // access by other threads.
+    SDL_SpinLock data_lock;
 } Leaf;
 
 // Initializes a new leaf instance. Data will be initialized with value 0.

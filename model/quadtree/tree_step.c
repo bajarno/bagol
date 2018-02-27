@@ -4,33 +4,69 @@ void tree_step(QuadTree *tree)
 {
     SDL_AtomicLock(&tree->write_lock);
 
-    tree_step_quad(tree, tree->parent_quad);
+    QuadStepData data;
+    data.tree = tree;
+    data.quad = tree->parent_quad;
+    tree_step_quad(&data);
 
     tree->current_gen = !tree->current_gen;
 
     SDL_AtomicUnlock(&tree->write_lock);
 }
 
-void tree_step_quad(QuadTree *tree, Quad *quad)
+int tree_step_quad(void *void_data)
 {
+    QuadStepData *data = (QuadStepData *)(void_data);
+
+    SDL_Thread **threads = calloc(4, sizeof(*threads));
+    QuadStepData **step_data = calloc(4, sizeof(*step_data));
+
     for (int i = 0; i < 4; i++)
     {
-        if (quad->metadata & metadata_check_mask[i])
+        if (data->quad->metadata & metadata_check_mask[i])
         {
-            if (quad->level > 1)
+            if (data->quad->level > 1 && data->quad->level % 9 == 0)
             {
-                tree_step_quad(tree, quad->sub_quads[i]);
+                step_data[i] = malloc(sizeof(step_data[i]));
+                step_data[i]->tree = data->tree;
+                step_data[i]->quad = data->quad->sub_quads[i];
+
+                threads[i] = SDL_CreateThread(tree_step_quad, "Quad_Step_Thread", step_data[i]);
+            }
+            else if (data->quad->level > 1)
+            {
+                step_data[i] = malloc(sizeof(step_data[i]));
+                step_data[i]->tree = data->tree;
+                step_data[i]->quad = data->quad->sub_quads[i];
+
+                tree_step_quad(step_data[i]);
             }
             else
             {
-                tree_step_leaf(tree, quad->sub_quads[i]);
+                tree_step_leaf(data->tree, data->quad->sub_quads[i]);
             }
         }
     }
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (threads[i] != NULL)
+        {
+            SDL_WaitThread(threads[i], NULL);
+        }
+        free(step_data[i]);
+    }
+
+    free(threads);
+    free(step_data);
+
+    return 0;
 }
 
 void tree_step_leaf(QuadTree *tree, Leaf *leaf)
 {
+    SDL_AtomicLock(&leaf->data_lock);
+
     int new_gen = !tree->current_gen;
     Block old_data = leaf->data[new_gen];
 
@@ -45,12 +81,27 @@ void tree_step_leaf(QuadTree *tree, Leaf *leaf)
     {
         quad_set_check(leaf->parent, 0, leaf->pos_in_parent);
     }
-    // If any data in the edges changed, update neighbouring blocks
-    else if ((new_data & INTERNAL_EDGE_MASK) != (old_data & INTERNAL_EDGE_MASK))
-    {
-        uint32_t x = leaf->x;
-        uint32_t y = leaf->y;
 
+    uint32_t x = leaf->x;
+    uint32_t y = leaf->y;
+
+    // If the new data and the current data is both zero, the leaf can be
+    // deleted from the tree to save computations.
+    if (!new_data && !data)
+    {
+        tree_delete_leaf(leaf);
+    }
+    else
+    {
+        // Reset data_change to 0.
+        leaf->data_change = 0;
+
+        SDL_AtomicUnlock(&leaf->data_lock);
+    }
+
+    // If any data in the edges changed, update neighbouring blocks
+    if ((new_data & INTERNAL_EDGE_MASK) != (old_data & INTERNAL_EDGE_MASK))
+    {
         // data north edge changed
         if ((new_data & INTERNAL_N_MASK) != (old_data & INTERNAL_N_MASK))
         {
@@ -130,14 +181,4 @@ void tree_step_leaf(QuadTree *tree, Leaf *leaf)
             leaf_mask(neighbour_west, new_gen, mask, data);
         }
     }
-
-    // If the new data and the current data is both zero, the leaf can be
-    // deleted from the tree to save computations.
-    if (!new_data && !data)
-    {
-        tree_delete_leaf(leaf);
-    }
-
-    // Reset data_change to 0.
-    leaf->data_change = 0;
 }

@@ -55,6 +55,12 @@ int main(int argc, char **argv)
     // Update loop, run in separate thread.
     SDL_Thread *update_thread = SDL_CreateThread(update_loop, "UpdateThread", &data);
 
+    // Add test pattern for analysis.
+    uint64_t x = data.render_data->camera->x;
+    uint64_t y = data.render_data->camera->y;
+    Pattern *pattern = pattern_parse_rle("patterns/p41660p5h2v0gun.rle");
+    // tree_place_pattern(data.tree, pattern, x, y);
+
     // Event loop, run in main thread.
     event_loop(&data);
 
@@ -170,7 +176,7 @@ int event_loop(void *data)
                 break;
             case SDLK_7:
                 pattern_deinit(pattern);
-                pattern = pattern_parse_rle("patterns/Conway%20life%20clock%20PM%20only.rle");
+                pattern = pattern_parse_rle("patterns/max.rle");
             }
         }
         else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_RIGHT)
@@ -185,9 +191,9 @@ int event_loop(void *data)
                 uint64_t x = event.button.x + app_data->render_data->camera->x;
                 uint64_t y = event.button.y + app_data->render_data->camera->y;
 
-                SDL_AtomicLock(&app_data->render_data->write_lock);
+                // SDL_AtomicLock(&app_data->render_data->write_lock);
                 tree_place_pattern(app_data->tree, pattern, x, y);
-                SDL_AtomicUnlock(&app_data->render_data->write_lock);
+                // SDL_AtomicUnlock(&app_data->render_data->write_lock);
             }
             else
             {

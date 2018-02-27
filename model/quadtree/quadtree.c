@@ -22,20 +22,8 @@ void tree_delete_leaf(Leaf *leaf)
 {
     Quad *parent = leaf->parent;
 
-    // Nonexistent leaf should not be checked.
-    quad_set_check(parent, 0, leaf->pos_in_parent);
+    quad_clear_sub_quad(parent, leaf->pos_in_parent);
 
-    // Lock parent quad from being read since structure will change.
-    SDL_AtomicLock(&parent->read_lock);
-
-    parent->metadata &= metadata_exist_unmask[leaf->pos_in_parent];
-
-    // Unlock parent for reading
-    SDL_AtomicUnlock(&parent->read_lock);
-
-    // Set pointer to Null and deinit leaf. Outside of lock to lock as little as
-    // possible.
-    parent->sub_quads[leaf->pos_in_parent] = NULL;
     leaf_deinit(leaf);
 
     // Check wheter parent can also be deleted and if so, delete it.
@@ -58,21 +46,9 @@ void tree_delete_quad(Quad *quad)
 
     Quad *parent = quad->parent;
 
-    // Nonexistent quad should not be checked.
-    quad_set_check(parent, 0, quad->pos_in_parent);
+    quad_clear_sub_quad(parent, quad->pos_in_parent);
 
-    // Lock parent quad from being read since structure will change.
-    SDL_AtomicLock(&parent->read_lock);
-
-    parent->metadata &= metadata_exist_unmask[quad->pos_in_parent];
-
-    // Unlock parent for reading
-    SDL_AtomicUnlock(&parent->read_lock);
-
-    // Set pointer to Null and deinit quad. Outside of lock to lock as little as
-    // possible.
     quad_deinit(quad);
-    parent->sub_quads[quad->pos_in_parent] = NULL;
 
     // Check wheter parent can also be deleted and if so, delete it.
     tree_delete_quad(parent);
@@ -88,6 +64,8 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
     // Check if position is below the current parent quad, if not, expand tree at top.
     while ((parent->x & position_mask) != (x & position_mask) || (parent->y & position_mask) != (y & position_mask))
     {
+        SDL_AtomicLock(&parent->read_lock);
+
         parent_level += 1;
         position_mask = UINT32_MAX << parent_level;
 
@@ -96,6 +74,9 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
         quad_set_check(new_parent, 1, parent->pos_in_parent);
 
         parent->parent = new_parent;
+
+        SDL_AtomicUnlock(&parent->read_lock);
+
         parent = new_parent;
 
         tree->parent_quad = parent;
@@ -111,6 +92,8 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
 
         int position = global_to_local_pos(x, y, level);
 
+        SDL_AtomicLock(&quad->read_lock);
+
         // If the sub quad does not exist, create it
         if (!(quad->metadata & metadata_exist_mask[position]))
         {
@@ -118,11 +101,15 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
             quad_set_sub_quad(quad, sub_quad, position);
         }
 
+        SDL_AtomicUnlock(&quad->read_lock);
+
         quad = quad->sub_quads[position];
     }
 
     int position = global_to_local_pos(x, y, 0);
     // If the leaf does not exist, create it.
+    SDL_AtomicLock(&quad->read_lock);
+
     if (!(quad->metadata & metadata_exist_mask[position]))
     {
         Leaf *leaf = leaf_init(x, y, quad);
@@ -130,7 +117,12 @@ Leaf *tree_get_leaf(QuadTree *tree, uint32_t x, uint32_t y)
 
         // New leafs must always be checked since they otherwise can stay empty
         // without being removed from the tree.
+        SDL_AtomicUnlock(&quad->read_lock);
         quad_set_check(leaf->parent, 1, position);
+    }
+    else
+    {
+        SDL_AtomicUnlock(&quad->read_lock);
     }
 
     return quad->sub_quads[position];

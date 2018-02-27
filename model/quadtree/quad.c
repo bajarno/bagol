@@ -26,6 +26,8 @@ Quad *quad_init(uint32_t x, uint32_t y, uint8_t level, Quad *parent)
 
 void quad_set_check(Quad *quad, int value, int position)
 {
+    SDL_AtomicLock(&quad->read_lock);
+
     uint8_t old_metadata = quad->metadata;
 
     if (value)
@@ -41,7 +43,44 @@ void quad_set_check(Quad *quad, int value, int position)
     {
         int check = (quad->metadata & metadata_check_mask_all) > 0;
 
+        SDL_AtomicUnlock(&quad->read_lock);
+
         quad_set_check(quad->parent, check, quad->pos_in_parent);
+    }
+    else
+    {
+        SDL_AtomicUnlock(&quad->read_lock);
+    }
+}
+
+void quad_clear_sub_quad(Quad *quad, int position)
+{
+    // Lock parent quad from being read since structure will change.
+    SDL_AtomicLock(&quad->read_lock);
+
+    // Nonexistent leaf should not be checked.
+    uint8_t old_metadata = quad->metadata;
+
+    quad->metadata &= metadata_check_unmask[position];
+    quad->metadata &= metadata_exist_unmask[position];
+
+    // Set pointer to Null and deinit leaf. Outside of lock to lock as little as
+    // possible.
+    quad->sub_quads[position] = NULL;
+
+    if ((quad->metadata & metadata_check_mask_all) != (old_metadata & metadata_check_mask_all) && quad->parent != NULL)
+    {
+        int check = (quad->metadata & metadata_check_mask_all) > 0;
+
+        // Unlock parent for reading
+        SDL_AtomicUnlock(&quad->read_lock);
+
+        quad_set_check(quad->parent, check, quad->pos_in_parent);
+    }
+    else
+    {
+        // Unlock parent for reading
+        SDL_AtomicUnlock(&quad->read_lock);
     }
 }
 
